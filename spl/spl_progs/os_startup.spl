@@ -1,0 +1,63 @@
+load(7,1); //load exception handler from blocks 1 and 2 to memory pages 7 and 8
+load(8,2);
+load(23,17); //load interrupt routine 7 from blocks 17 and 18 to pages 23 and 24
+load(24,18);
+
+[READY_LIST + 0] = 0; //set pid of the init process to 0
+
+load(25,21); //load the code of the init program
+load(26,22);
+load(27,23); 
+
+PTBR = 1024; //Since init process has pid 0, its ptbr is set to 1024
+PTLR = 4; //Every process has 4 entries in its page table
+
+[PTBR + 0] = 25; //Physical page number for logical page 0
+[PTBR + 1] = "01"; //auxilary info for logical page 0
+[PTBR + 2] = 26;
+[PTBR + 3] = "01";
+[PTBR + 4] = 27;
+[PTBR + 5] = "01";
+[PTBR + 6] = 28; //for the stack
+[PTBR + 7] = "01";
+
+load(9,3); //load timer interrupt routine
+load(10,4); 
+
+[READY_LIST + 1] = 2; //the pcb of the init process states that it is running
+
+breakpoint;
+SP = 3*512; //The stack pointer points to the fourth logical page (since it is used by user programs)
+
+[28*512] = 0; //set up the IP value for init at the top of the stack
+breakpoint;
+
+load(11,5); //load interrupt 1 routine
+load(12,6); 
+
+[READY_LIST + 32] = 1; //sets the entry for pid as 1
+load(29,27); //page 29 contains the code for the program. We let page 30 be the stack.
+alias PTBR_Process1 S0;
+PTBR_Process1 = 1024 + 1*8;
+[PTBR_Process1 + 0] = 29;
+[PTBR_Process1 + 1] = "01";
+[PTBR_Process1 + 2] = "-1";
+[PTBR_Process1 + 3] = "00";
+[PTBR_Process1 + 4] = "-1";
+[PTBR_Process1 + 5] = "00";
+[PTBR_Process1 + 6] = 30;
+[PTBR_Process1 + 7] = "01";
+[READY_LIST + 33] = 1;
+[READY_LIST + 37] = PTBR_Process1;
+[READY_LIST + 38] = 4;
+[READY_LIST + 34] = 3*512; //sets the entry for the BP in the PCB
+[READY_LIST + 35] = 3*512; //sets the entry for the SP in the PCB
+[READY_LIST + 36] = 0; //IP points to the logical address of the start of the program
+
+
+
+ireturn; //transfer control to the user program
+
+
+
+

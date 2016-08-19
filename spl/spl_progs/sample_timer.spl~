@@ -21,6 +21,21 @@ physicalSP = ([PTBR + 2 * (SP/512)] * 512) + (SP%512); //get the physical SP bec
 [currentPCB + 13] = R6;
 [currentPCB + 14] = R7;
 
+//Round Robin Scheduling
+
+alias i S3;
+i = (currentPID + 1)%32;
+while([READY_LIST + 32*i + 1]!=1) do
+	i  = (i+1)%32;
+endwhile;
+
+alias newPCB S4;
+newPCB = READY_LIST + 32*i;
+BP = [newPCB + 2];
+SP = [newPCB + 3];
+PTBR = [newPCB + 5];
+PTLR = [newPCB + 6];
+
 
 
 
