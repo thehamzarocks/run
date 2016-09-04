@@ -35,7 +35,20 @@ BP = [newPCB + 2];
 SP = [newPCB + 3];
 PTBR = [newPCB + 5];
 PTLR = [newPCB + 6];
+R0 = [newPCB + 7];
+R1 = [newPCB + 8];
+R2 = [newPCB + 9];
+R3 = [newPCB + 10];
+R4 = [newPCB + 11];
+R5 = [newPCB + 12];
+R6 = [newPCB + 13];
+R7 = [newPCB + 14];
 
+SP = SP + 1;
+alias newphysicalSP S2;
+newphysicalSP = ([PTBR + 2*(SP/512)]*512) + (SP%512); 
+[newphysicalSP] = [newPCB + 4]; //Stores the IP field value of PCB on top of the stack
+[newPCB + 1] = 2;
 
 
 

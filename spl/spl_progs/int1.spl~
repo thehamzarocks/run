@@ -1,0 +1,59 @@
+alias physicalSP S0;
+alias sysCallNo S1;
+alias filename S2;
+
+physicalSP = [PTBR + 2*(SP/512)]*512  + (SP%512);
+sysCallNo = physicalSP - 1;
+S2 = physicalSP - 3;
+breakpoint;
+
+if(sysCallNo == 1) then
+	alias i S3;
+	i = FAT;
+	while(i!=FAT+512) do
+		if([i]==S2) then //file exists
+			[physicalSP - 2]=0;  //success
+			ireturn;
+		endif;
+		i = i+8;
+	endwhile;
+	
+	i = 3072;
+	while(i<=3519 && [i]!=0) do //search for empty blocks
+		i = i+1;
+	endwhile;
+	if(i==3520) then
+		[physicalSP - 2] = -1; //no free blocks. Failure
+		ireturn;
+	endif;
+	i = i-3072; //get the block number of the free block
+	
+	alias j S4;
+	j = FAT;
+	while(j < FAT+512 && [j+2]!=-1) do //search for an empty fat entry(basic block is -1)
+		j = j+8;
+	endwhile;
+	if(j==FAT+512) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	[j] = filename;
+	[j+1] = 0;
+	[j+2] = i;
+	
+	load(1,[j+2]); //load basic block to scratchpad
+	i = 512;
+	while(i<1024) do
+		[i] = -1; //set all entries in the basic block to -1. No data blocks for this file.
+		i = i+1;
+	endwhile;
+	store(1,[j+2]); //store the basic block back into the disk
+
+	[3072 + [j+2]] = 1; //df entry set to 1. Used.
+	store(5,19); //store the updated copies of FAT and df
+	store(6,20);
+	[physicalSP-2] = 0;
+	ireturn;
+endif;
+
+	
