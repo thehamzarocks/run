@@ -24,7 +24,7 @@ PTLR = 4; //Every process has 4 entries in its page table
 load(9,3); //load timer interrupt routine
 load(10,4); 
 
-  [READY_LIST + 1] = 2; //the pcb of the init process states that it is running
+[READY_LIST + 1] = 2; //the pcb of the init process states that it is running
 
 breakpoint;
 SP = 3*512; //The stack pointer points to the fourth logical page (since it is used by user programs)

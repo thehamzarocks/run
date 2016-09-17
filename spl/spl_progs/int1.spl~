@@ -3,11 +3,11 @@ alias sysCallNo S1;
 alias filename S2;
 
 physicalSP = [PTBR + 2*(SP/512)]*512  + (SP%512);
-sysCallNo = physicalSP - 1;
-S2 = physicalSP - 3;
+sysCallNo = [physicalSP - 1];
 breakpoint;
 
 if(sysCallNo == 1) then
+	S2 = [physicalSP - 3];
 	alias i S3;
 	i = FAT;
 	while(i!=FAT+512) do
@@ -56,4 +56,7 @@ if(sysCallNo == 1) then
 	ireturn;
 endif;
 
-	
+			
+		
+
+

@@ -26,17 +26,33 @@ load(10,4);
 
 [READY_LIST + 1] = 2; //the pcb of the init process states that it is running
 
-breakpoint;
 SP = 3*512; //The stack pointer points to the fourth logical page (since it is used by user programs)
 
 [28*512] = 0; //set up the IP value for init at the top of the stack
-breakpoint;
 
 load(11,5); //load interrupt 1 routine
 load(12,6); 
 
 load(5,19); //load fat 
 load(6,20); //load df
+
+alias counter S0;
+counter = 0;
+
+while(counter < 128) do //Initialize the sys-wide open file table
+	[FILE_TABLE + counter + 0] = -1; //Set FAT index of sys-wide open file table to invalid
+	[FILE_TABLE + counter + 1] = 0; //File open count is 0
+	counter = counter + 2;
+endwhile;
+
+counter = 0;
+while(counter < 16) do //initialize per-process open file table of the init process to invalids
+	[READY_LIST + 15 + counter] = -1;
+	[READY_LIST + 15 + counter] = -1;
+	counter = counter + 2;
+endwhile;
+
+
 
 
 ireturn; //transfer control to the user program
