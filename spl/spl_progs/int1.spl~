@@ -3,8 +3,8 @@ alias sysCallNo S1;
 alias filename S2;
 
 physicalSP = [PTBR + 2*(SP/512)]*512  + (SP%512);
-sysCallNo = physicalSP - 1;
-S2 = physicalSP - 3;
+sysCallNo = [physicalSP - 1];
+S2 = [physicalSP - 3];
 breakpoint;
 
 if(sysCallNo == 1) then

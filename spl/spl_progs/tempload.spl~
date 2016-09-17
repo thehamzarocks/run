@@ -1,0 +1,27 @@
+load(25,21);
+load(26,22);
+load(27,23);
+
+[S5 + 0] = 25;
+[S5 + 1] = "01";
+[S5 + 2] = 26;
+[S5 + 3] = "01";
+[S5 + 4] = "27";
+[S5 + 5] = "01";
+
+load(29,27);
+[S6 + 0] = 29;
+[S6 + 1] = "01";
+[S6 + 2] = "-1";
+[S6 + 3] = "00";
+[S6 + 4] = "-1";
+[S6 + 5] = "00";
+
+alias newIP S4;
+newIP = (EFR/1000);
+alias physicalSP S3;
+SP = SP+1;
+//physicalSP = ([S5+2*(SP/512)]*512 + (SP%512));
+//[physicalSP] = newIP;
+[SP] = newIP;
+ireturn;
