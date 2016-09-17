@@ -44,6 +44,7 @@ if(sysCallNo == 2) then
 			endif;
 			i = i + 2;
 		endwhile;
+	endif;
 		
 	
 	if(sysindex == -1) then //no free space
