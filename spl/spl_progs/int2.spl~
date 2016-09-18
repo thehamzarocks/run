@@ -13,7 +13,7 @@ if(sysCallNo == 2) then
 	i = 0;
 	while(i<512) do //check if the file is present in the FAT
 		if([FAT + i] == filename) then
-			fatindex = i;
+			fatindex = i/8;
 			break;
 		endif;
 		i = i + 8;

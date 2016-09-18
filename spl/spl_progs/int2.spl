@@ -13,7 +13,7 @@ if(sysCallNo == 2) then
 	i = 0;
 	while(i<512) do //check if the file is present in the FAT
 		if([FAT + i] == filename) then
-			fatindex = i;
+			fatindex = i/8;
 			break;
 		endif;
 		i = i + 8;
@@ -29,7 +29,7 @@ if(sysCallNo == 2) then
 	sysindex = -1;
 	while(i < 128) do //check if the file has been opened already in the sys-wide open file table
 		if([FILE_TABLE + i] == filename) then
-			sysindex = i;
+			sysindex = i/2;
 			break;
 		endif;
 		i = i + 2;
@@ -39,7 +39,7 @@ if(sysCallNo == 2) then
 		i = 0;
 		while(i<128) do
 			if([FILE_TABLE + i] == -1) then
-				sysindex = i;
+				sysindex = i/2;
 				break;
 			endif;
 			i = i + 2;
@@ -62,7 +62,7 @@ if(sysCallNo == 2) then
 	i = 0;
 	while(i<16) do //search for a free per-process open file table entry
 		if([PCB + 15 + i] == -1) then
-			ppentry = i;
+			ppentry = i/2;
 			break;
 		endif;
 		i = i + 2;
@@ -73,11 +73,11 @@ if(sysCallNo == 2) then
 		ireturn;
 	endif;
 	
-	[PCB + 15 + ppentry + 0] = sysindex; //set the values in the per process open file table
-	[PCB + 15 + ppentry + 1] = 0;
+	[PCB + 15 + ppentry*2 + 0] = sysindex; //set the values in the per process open file table
+	[PCB + 15 + ppentry*2 + 1] = 0;
 	
-	[FILE_TABLE + sysindex + 0] = fatindex; //set the values in the system wide open file table
-	[FILE_TABLE + sysindex + 1] = [FILE_TABLE + sysindex + 1] + 1;
+	[FILE_TABLE + sysindex*2 + 0] = fatindex; //set the values in the system wide open file table
+	[FILE_TABLE + sysindex*2 + 1] = [FILE_TABLE + sysindex*2 + 1] + 1;
 
 	[physicalSP - 2] = ppentry;
 	ireturn;
