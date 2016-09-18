@@ -7,9 +7,13 @@ integer main()
 	status = Create("myfile.dat");
 	print(status);
 	status = Open("myfile.dat");
+	print("Opened myfile");
 	print(status);
-	Create("hellothere.dat");
-	status = Open("hellothere.dat");
+	status = Create("hellothere.dat");
 	print(status);
+	//status = Open("hellothere.dat");
+	//print(status);
+	//status = Close(status);
+	//print(status);
 	return 0;
 }

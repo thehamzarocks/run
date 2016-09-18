@@ -56,6 +56,79 @@ if(sysCallNo == 1) then
 	ireturn;
 endif;
 
+if(sysCallNo == 4) then
+	alias filename S2;
+	filename = [physicalSP - 3];
+	
+	alias i S3;
+	i = 0;
+	alias fatindex S4;
+	while(i<64) do //check if the file exists
+		if([FAT + i*8] == filename) then
+			fatindex = i;
+			break;
+		endif;
+		i = i+1;
+	endwhile;
+
+	if(i==64) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	i = 0;
+	while(i<64) do
+		if([FILE_TABLE + 2*i] == fatindex) then //check if the file is open
+			[physicalSP - 2] = -1;
+			ireturn;
+		endif;
+		i = i+1;
+	endwhile;
+	
+	i = 0;
+	alias j S6;
+	while(i<256) do
+		load(1,[FAT + 8*fatindex + 2]); //load the basic block to the scratchpad
+		if([512 + i] != -1) then //the data block entry is not invalid
+	
+
+			load(1, [512 + i]); //load the data block number i from the block list
+		
+			j = 0;
+			while(j<512) do
+				[512 + j] = ""; //set all the words in the data block to ""
+				j = j + 1;
+			endwhile;	
+			store(1,[512 + i]); //store the data block back on to the disk
+			load(1, [FAT + 8*fatindex + 2]);
+			[6*512 + [512 + i]] = 0; //df entry for the block is set to unused
+		endif;
+		i = i + 1;
+	endwhile;
+
+	load(1,[FAT + 8*fatindex +2]); //load the basic block to the scratchpad
+	i=0;
+	while(i<256) do
+		[512 + i] = -1; //set the basic block entry to -1
+		i = i + 1;
+	endwhile;
+	store(1,[FAT + 8*fatindex + 2]); //store the basic block back to the disk
+	[6*512 + [FAT + 8*fatindex + 2]] = 0; //set the df entry of the basic block to unused
+	[FAT + 8*fatindex + 0] = -1; //invalidate the filename field
+	[FAT + 8*fatindex + 1] = -1; //invalidate the filesize field
+
+	store(5,19); //store back the fat
+	store(6,20); //store back the df list
+
+	[physicalSP - 2] = 0; //success
+	ireturn;
+	
+	
+	
+			
+
+endif;	
+
 			
 		
 
