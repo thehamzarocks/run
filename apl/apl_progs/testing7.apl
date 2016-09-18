@@ -46,7 +46,8 @@ integer main()
 	//print(status);
 	status = Write(0,"Cool");
 	print(status);
-	
+	status = Write(0,"Now");
+	print(status);	
 	
 	return 0;
 }

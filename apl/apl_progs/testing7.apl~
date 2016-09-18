@@ -38,14 +38,14 @@ integer main()
 	//status = Write(0,"hello");
 	//print(status);
 
-	//status = Create("Myfile.dat");
-	//print(status);
-	//status = Open("Myfile.dat");
-	//print(status);
-	status = Delete("Myfile.dat");
+	status = Create("Myfile.dat");
 	print(status);
-	//status = Write(0,"Cool");
+	status = Open("Myfile.dat");
+	print(status);
+	//status = Delete("Myfile.dat");
 	//print(status);
+	status = Write(0,"Cool");
+	print(status);
 	
 	
 	return 0;
