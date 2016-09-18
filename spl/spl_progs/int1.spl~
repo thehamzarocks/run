@@ -64,7 +64,7 @@ if(sysCallNo == 4) then
 	i = 0;
 	alias fatindex S4;
 	while(i<64) do //check if the file exists
-		if([FAT + i*8] == filename) then
+		if([FAT + i*8 + 0] == filename) then
 			fatindex = i;
 			break;
 		endif;
@@ -87,21 +87,23 @@ if(sysCallNo == 4) then
 	
 	i = 0;
 	alias j S6;
+	alias diskblock S7;
 	while(i<256) do
 		load(1,[FAT + 8*fatindex + 2]); //load the basic block to the scratchpad
 		if([512 + i] != -1) then //the data block entry is not invalid
-	
+			S7 = [512 + i];
 
-			load(1, [512 + i]); //load the data block number i from the block list
+			load(1, S7); //load the data block number i from the block list
 		
 			j = 0;
 			while(j<512) do
 				[512 + j] = ""; //set all the words in the data block to ""
 				j = j + 1;
 			endwhile;	
-			store(1,[512 + i]); //store the data block back on to the disk
+			store(1,S7); //store the data block back on to the disk
 			load(1, [FAT + 8*fatindex + 2]);
-			[6*512 + [512 + i]] = 0; //df entry for the block is set to unused
+			
+			[6*512 + S7] = 0; //df entry for the block is set to unused
 		endif;
 		i = i + 1;
 	endwhile;
@@ -115,7 +117,10 @@ if(sysCallNo == 4) then
 	store(1,[FAT + 8*fatindex + 2]); //store the basic block back to the disk
 	[6*512 + [FAT + 8*fatindex + 2]] = 0; //set the df entry of the basic block to unused
 	[FAT + 8*fatindex + 0] = -1; //invalidate the filename field
-	[FAT + 8*fatindex + 1] = -1; //invalidate the filesize field
+	[FAT + 8*fatindex + 1] = 0; //invalidate the filesize field
+	[FAT + 8*fatindex + 2] = 100; //invalidate the blocknumber field
+	
+	breakpoint;
 
 	store(5,19); //store back the fat
 	store(6,20); //store back the df list
