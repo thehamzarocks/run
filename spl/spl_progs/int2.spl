@@ -82,3 +82,35 @@ if(sysCallNo == 2) then
 	[physicalSP - 2] = ppentry;
 	ireturn;
 endif;
+
+if(sysCallNo == 3) then
+	alias filedescriptor S2;
+	filedescriptor = [physicalSP - 3];
+	
+	if(filedescriptor<0 || filedescriptor>7) then //not a valid entry in the per process open file table
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+
+	alias PID S3;
+	PID = (PTBR - 1024)/8;
+	alias PCB S4;
+	PCB = READY_LIST + 32*PID;
+	if([PCB + 15 + 2*filedescriptor] == -1) then //invalid entry in the per process open file table
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	alias sysindex S5;
+	sysindex = [PCB + 15 + filedescriptor*2];
+	[FILE_TABLE + sysindex*2 + 1] = [FILE_TABLE + sysindex*2 + 1] - 1; //decrement the file open count in the system wide open file table
+	if([FILE_TABLE + sysindex*2 + 1] == 0) then //if the count becomes 0, invalidate the entry
+		[FILE_TABLE + sysindex*2 + 0] = -1;
+	endif;
+	
+	[PCB + 15 + filedescriptor*2 + 0] = -1; //invalidate the entry in the per process open file table
+	[PCB + 15 + filedescriptor*2 + 1] = -1;
+	[physicalSP - 2] = 0; //success
+	ireturn;
+
+endif;
