@@ -19,21 +19,22 @@ if(sysCallNo == 5) then
 	alias PCB S5;
 	PID = (PTBR-1024)/8;
 	PCB = READY_LIST + 32*PID;
-	alias ppentry S6;
-	ppentry = [PCB + 15 + 2*filedescriptor];
-	if([ppentry]==-1) then
+	alias syswidepointer S6;
+	syswidepointer = [PCB + 15 + 2*filedescriptor + 0];
+	if(syswidepointer==-1) then
 		[physicalSP - 2] = -1;
 		ireturn;
 	endif;
 
-	alias syswidepointer S7;
+	//alias syswidepointer S7;
 	alias lseek S8;
 	
-	syswidepointer = [ppentry];
-	lseek = [ppentry + 1];
+	//syswidepointer = [ppentry];
+	//lseek = [syswidepointer + 1];
+	lseek = [PCB + 15 + 2*filedescriptor + 1];
 	
 	alias fatindex S9;
-	fatindex = [FILE_TABLE + syswidepointer];
+	fatindex = [FILE_TABLE + 2*syswidepointer];
 	
 	load(1,[FAT + 8*fatindex + 2]); //load the basic block to the scratchpad
 	alias basblockindex S10;
@@ -47,6 +48,7 @@ if(sysCallNo == 5) then
 				[6*512 + i]=1; //set it to used
 				datablock = i;
 				[512 + basblockindex] = i; //set the entry in the basic block to this block number
+				breakpoint;
 				store(1,[FAT + 8*fatindex + 2]); //commit the basic block to disk
 				[FAT + 8*fatindex + 1] = [FAT + 8*fatindex + 1] + 512; //increment file size by 512 in the FAT
 				store(5,19); //commit FAT
@@ -70,7 +72,8 @@ if(sysCallNo == 5) then
 	[512 + lseek%512] = wordtowrite;
 	store(1,datablock);
 	
-	[ppentry + 1] = [ppentry + 1] + 1; //increment the lseek value
+	//[ppentry + 1] = [ppentry + 1] + 1; //increment the lseek value
+	[PCB + 15 + 2*filedescriptor + 1] = [PCB + 15 + 2*filedescriptor + 1] + 1;
 	[physicalSP - 2] = 0;
 	ireturn;
 endif;

@@ -66,6 +66,7 @@ if(sysCallNo == 4) then
 	while(i<64) do //check if the file exists
 		if([FAT + i*8 + 0] == filename) then
 			fatindex = i;
+			breakpoint;
 			break;
 		endif;
 		i = i+1;
@@ -118,9 +119,8 @@ if(sysCallNo == 4) then
 	[6*512 + [FAT + 8*fatindex + 2]] = 0; //set the df entry of the basic block to unused
 	[FAT + 8*fatindex + 0] = -1; //invalidate the filename field
 	[FAT + 8*fatindex + 1] = 0; //invalidate the filesize field
-	[FAT + 8*fatindex + 2] = 100; //invalidate the blocknumber field
+	[FAT + 8*fatindex + 2] = -1; //invalidate the blocknumber field
 	
-	breakpoint;
 
 	store(5,19); //store back the fat
 	store(6,20); //store back the df list

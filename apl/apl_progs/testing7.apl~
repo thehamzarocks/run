@@ -2,7 +2,7 @@ decl
 	integer status;
 enddecl
 integer main()
-{	
+{	integer wordread;
 	print("Hello");
 	//status = Create("myfile.dat");
 	//print(status);
@@ -17,17 +17,36 @@ integer main()
 	//print("Closing hellothere.dat");
 	//print(status);
 
-	status = Create("myfile.dat");
-	print("file created");
+	//status = Create("myfile.dat");
+	//print("file created");
+	//print(status);
+	//status = Open("myfile.dat");
+	//print("file opened");
+	//print(status);
+	//status = Close(status);
+	//print("Closing file");
+	//print(status);
+	//status = Delete("myfile.dat");
+	//print("File deleted");
+	//print(status);
+
+	//status = Read(0,wordread);
+	//print(status);
+	//print(wordread);
+	//status = Seek(0,0);
+	//print(status);
+	//status = Write(0,"hello");
+	//print(status);
+
+	//status = Create("Myfile.dat");
+	//print(status);
+	//status = Open("Myfile.dat");
+	//print(status);
+	status = Delete("Myfile.dat");
 	print(status);
-	status = Open("myfile.dat");
-	print("file opened");
-	print(status);
-	status = Close(status);
-	print("Closing file");
-	/print(status);
-	status = Delete("myfile.dat");
-	print("File deleted");
-	print(status);
+	//status = Write(0,"Cool");
+	//print(status);
+	
+	
 	return 0;
 }

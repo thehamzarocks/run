@@ -28,7 +28,7 @@ if(sysCallNo == 2) then
 	alias sysindex S5;
 	sysindex = -1;
 	while(i < 128) do //check if the file has been opened already in the sys-wide open file table
-		if([FILE_TABLE + i] == filename) then
+		if([FILE_TABLE + i] == fatindex) then
 			sysindex = i/2;
 			break;
 		endif;

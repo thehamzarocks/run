@@ -41,3 +41,54 @@ if(sysCallNo == 6) then
 	ireturn;
 endif;
 
+if(sysCallNo == 7) then
+	alias filedescriptor S2;
+	alias wordread S3;
+	filedescriptor = [physicalSP - 4];
+	wordread = [physicalSP - 3];
+
+	if(filedescriptor<0 || filedescriptor>7) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+
+	alias PID S4;
+	alias PCB S5;
+	PID = (PTBR-1024)/8;
+	PCB = READY_LIST + 32*PID;
+	
+	alias syswidepointer S6;
+	syswidepointer = [PCB + 15 + 2*filedescriptor];
+	if(syswidepointer == -1) then
+		[physicalSP -2] = -1;
+		ireturn;
+	endif;
+
+	alias lseek S7;
+	lseek = [PCB + 15 + 2*filedescriptor + 1];
+	
+	alias fatindex S8;
+	fatindex = [FILE_TABLE + 2*syswidepointer];
+	alias basblock S9;
+	basblock = [FAT + 8*fatindex + 2];
+	load(1,basblock);
+	alias filesize S10;
+	filesize = [FAT + fatindex*8 + 1];
+	if(lseek == filesize) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	alias datblock S11;
+	datblock = [512 + lseek/512];
+	load(1,datblock);
+	
+	wordread = [512 + lseek%512];
+	[physicalSP - 3] = wordread;
+	
+	[PCB + 15 + 2*filedescriptor + 1] = [PCB + 15 + 2*filedescriptor +1] + 1;
+	[physicalSP - 2] = 0;
+	ireturn;
+endif;
+
+	
+
