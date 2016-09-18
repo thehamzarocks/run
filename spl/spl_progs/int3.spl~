@@ -1,0 +1,43 @@
+alias physicalSP S0;
+alias sysCallNo S1;
+
+physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+sysCallNo = [physicalSP - 1];
+
+if(sysCallNo == 6) then
+	alias filedescriptor S2;
+	alias newlseek S3;
+	filedescriptor = [physicalSP - 4];
+	newlseek = [physicalSP - 3];
+	
+	if(filedescriptor<0 || filedescriptor>7) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	alias PID S4;
+	alias PCB S5;
+	PID = (PTBR-1024)/8;
+	PCB = READY_LIST + 32*PID;
+
+	alias syswidepointer S6;
+	syswidepointer = [PCB + 15 + 2*filedescriptor + 0];
+	if(syswidepointer == -1) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	alias fatindex S7;
+	fatindex = [FILE_TABLE + 2*syswidepointer];
+	alias filesize S8;
+	filesize = [FAT + 8*fatindex + 1];
+	if(lseek<0 || lseek>filesize) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	[PCB + 15 + 2*filedescriptor + 1] = newlseek;
+	[physicalSP - 2] = 0;
+	ireturn;
+endif;
+
