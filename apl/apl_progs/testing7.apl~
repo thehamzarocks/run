@@ -20,8 +20,14 @@ integer main()
 	status = Create("myfile.dat");
 	print("file created");
 	print(status);
-	//status = Delete("myfile.dat");
-	//print("File deleted");
-	//print(status);
+	status = Open("myfile.dat");
+	print("file opened");
+	print(status);
+	status = Close(status);
+	print("Closing file");
+	/print(status);
+	status = Delete("myfile.dat");
+	print("File deleted");
+	print(status);
 	return 0;
 }

@@ -17,9 +17,15 @@ integer main()
 	//print("Closing hellothere.dat");
 	//print(status);
 
-	//status = Create("myfile.dat");
-	//print("file created");
-	//print(status);
+	status = Create("myfile.dat");
+	print("file created");
+	print(status);
+	status = Open("myfile.dat");
+	print("file opened");
+	print(status);
+	status = Close(status);
+	print("Closing file");
+	print(status);
 	status = Delete("myfile.dat");
 	print("File deleted");
 	print(status);
