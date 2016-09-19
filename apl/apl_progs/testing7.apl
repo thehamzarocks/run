@@ -44,10 +44,37 @@ integer main()
 	print(status);
 	//status = Delete("Myfile.dat");
 	//print(status);
-	status = Write(0,"Cool");
+	//status = Write(0,"Cool");
+	//print(status);
+	//status = Write(0,"Now");
+	//print(status);	
+
+	//status = Seek(0,20);
+	//print(status);
+	//status = Write(0,"Hello There!");
+
+	status = Read(0,wordread);
 	print(status);
-	status = Write(0,"Now");
-	print(status);	
+	print(wordread);
+
+	status = Read(0,wordread);
+	print(status);
+	print(wordread);
+
+	status = Close(0);
+	print(status);
+
+	status = Open("Myfile.dat");
+	print(status);
+	status = Read(0,wordread);
+	print(wordread);
+	print(status);
+
+	status = Open("Myfile.dat");
+	print(status);
+	status = Read(1,wordread);
+	print(wordread);
+	print(status);
 	
 	return 0;
 }
