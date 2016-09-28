@@ -55,14 +55,34 @@ load(17,11);
 load(18,12);
 load(19,13);
 load(20,14);
+load(21,15);
+load(22,16);
+load(23,17);
+load(24,18);
+
 while(counter < 16) do //initialize per-process open file table of the init process to invalids
 	[READY_LIST + 15 + counter] = -1;
 	[READY_LIST + 15 + counter] = -1;
 	counter = counter + 2;
 endwhile;
 
+counter = 1280; //initializing the memory free list
+while(counter<=1343) do
+	[counter] = 0;
+	counter = counter + 1;
+endwhile;
+counter = 1280;
+while(counter<=1304) do
+	[counter] = 1;
+	counter = counter + 1;
+endwhile;
 
-
+counter = 0;
+while(counter<32) do
+	[READY_LIST + counter*32 + 1] = 0; //set the state field of each process to 0
+	counter = counter + 1;
+endwhile;
+	
 
 ireturn; //transfer control to the user program
 

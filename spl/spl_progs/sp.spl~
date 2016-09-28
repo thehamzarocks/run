@@ -22,6 +22,21 @@ physicalSP = ([PTBR + 2 * (SP/512)] * 512) + (SP%512); //get the physical SP bec
 [currentPCB + 14] = R7;
 
 
+//Implement to round-robin scheduling to identify the next ready process
+alias i S3;
+alias current_State S4;
+//i = (current_PCB + 32)%32;
+//current_State = [i+1];
+//while(current_State != 1) do
+//	i = (i+32)%32;
+//	current_State = [i+1];
+//endwhile;
+
+if(currentPID==0) then
+	
+
+alias newPCB S5;
+newPCB = i;
 
 
 ireturn;
