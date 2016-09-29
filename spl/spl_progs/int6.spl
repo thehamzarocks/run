@@ -1,0 +1,113 @@
+alias i S0;
+alias physicalSP S1;
+alias sysCallNo S2;
+
+physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+sysCallNo = [physicalSP - 1];
+
+if(sysCallNo == 9) then
+	alias counter S3;
+	alias filename S4;
+	filename = [physicalSP - 3];
+	counter = 0;
+	while(counter < 64) do
+		if([FAT + counter*8]==filename) then
+			break;
+		endif;
+		counter = counter + 1;
+	endwhile;
+	
+	if(counter == 64) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	load(1,[FAT + 8*i + 2]);
+	alias numCodeNew S5;
+	alias numCodeOld S6;
+	
+	numCodeNew = 0;
+	numCodeOld = 0;	
+
+	counter = 0;
+	while(counter<3) do
+		if([512 + counter]!=-1) then
+			numCodeNew = numCodeNew + 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	counter = 0;
+	while(counter < 3) do
+		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
+			numCodeOld = numCodeOld + 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	if(numCodeOld > numCodeNew) then
+		counter = 0;
+		while(counter<3) do
+			if([512 + counter]==-1) then
+				[PTBR + 2*counter + 1] = "00";
+				[1280 + [PTBR + 2*counter]] = 0;
+				[PTBR + 2*counter] = -1;
+			endif;
+			counter = counter + 1;
+		endwhile;
+	endif;
+
+	alias numFree S7;
+	numFree = 0;
+	if(numCodeOld < numCodeNew) then
+		counter = 0;
+		while(counter < 3) do
+			if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter+1]=="10") then
+				if([512 + counter]!=-1) then
+					i = 0;
+					while(i < 64) do
+						if([1280 + i]==0) then
+							numFree = numFree + 1;
+						endif;
+						i = i + 1;
+					endwhile;
+				endif;
+			endif;
+			counter = counter + 1;
+		endwhile;
+
+		if(numFree < (numCodeNew - numCodeOld)) then
+			[physicalSP - 2] = -1;
+			ireturn;
+		endif;
+
+		while(counter < 3) do
+			if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
+				if([512 + counter]!=-1) then
+					i = 0;
+					while(i < 64) do
+						if([1280 + i] == 0) then
+							[PTBR + 2*counter] = i;
+							[PTBR + 2*counter + 1] = "01";
+							[1280 + i] = 1;
+						endif;
+					i = i + 1;
+				endif;
+			endif;
+			counter = counter + 1;
+		endwhile;
+
+		counter = 0;
+		while(counter<3) do
+			if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
+				load([PTBR + 2*counter], [512+counter]);
+			endif;
+			counter = counter + 1;
+		endwhile;
+
+		
+				
+					
+					
+					
+		
