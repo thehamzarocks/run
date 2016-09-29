@@ -1,8 +1,9 @@
 integer main() {
 	integer pid;
-	print "Before fork";
+	print ("Before fork");
 	pid  = Fork();
-	print "after fork";
+	print (pid);
+	print ("after fork");
 	return 0;
 }
 

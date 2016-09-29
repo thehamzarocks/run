@@ -2,10 +2,12 @@ alias i S0;
 alias physicalSP S1;
 alias sysCallNo S2;
 
-physicalSP = [PTBR + (SP/512)]*512 + (SP%512);
+physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 sysCallNo = [physicalSP - 1];
+breakpoint;
 
 if(sysCallNo == 8) then
+	breakpoint;
 	alias counter S3;
 	counter = 0;
 	while(counter < 32) do
@@ -98,7 +100,7 @@ if(sysCallNo == 8) then
 	counter = 0;
 	while(counter < 8) do
 		[i + 15 + 2*counter] = [READY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter];
-		[i + 15 + 2*counter + 1] = [REAY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter + 1]
+		[i + 15 + 2*counter + 1] = [READY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter + 1];
 		if([i + 15 + 2*counter]!=-1) then
 			[FILE_TABLE + 2*[i + 15 + 2*counter] + 1] = [FILE_TABLE + 2*[i + 15 + 2*counter] + 1] + 1;
 		endif;
