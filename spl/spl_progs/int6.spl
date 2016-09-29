@@ -81,7 +81,7 @@ if(sysCallNo == 9) then
 			ireturn;
 		endif;
 
-		while(counter < 3) do
+		while(counter < 3) do	
 			if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
 				if([512 + counter]!=-1) then
 					i = 0;
@@ -90,23 +90,43 @@ if(sysCallNo == 9) then
 							[PTBR + 2*counter] = i;
 							[PTBR + 2*counter + 1] = "01";
 							[1280 + i] = 1;
+							break;
 						endif;
-					i = i + 1;
+						i = i + 1;
+					endwhile;
 				endif;
 			endif;
 			counter = counter + 1;
 		endwhile;
+	endif;
 
-		counter = 0;
-		while(counter<3) do
-			if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
-				load([PTBR + 2*counter], [512+counter]);
-			endif;
-			counter = counter + 1;
-		endwhile;
-
+	counter = 0;
+	while(counter<3) do
+		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
+			load([PTBR + 2*counter], [512+counter]);
+		endif;
+		counter = counter + 1;	
+	endwhile;
 		
-				
+	counter = 0;
+	i = READY_LIST + 32*(PTBR-1024)/8 + 15;
+	while(counter<8) do
+		if([i + 2*counter]!=-1) then
+			[FILE_TABLE + [i + 2*counter]*2 + 1] = [FILE_TABLE + [i + 2*counter]*2 +1] - 1;
+			if([FILE_TABLE + [i + 2*counter]*2 + 1] == 0) then
+				[FILE_TABLE + [i + 2*counter]*2] = -1;
+			endif;
+			[i + 2*counter] = -1;
+			[i + 2*counter + 1] = -1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	SP = 3*512;
+	[physicalSP] = 0;
+	ireturn;
+endif;
+
 					
 					
 					
