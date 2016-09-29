@@ -1,0 +1,136 @@
+alias i S0;
+alias physicalSP S1;
+alias sysCallNo S2;
+
+physicalSP = [PTBR + (SP/512)]*512 + (SP%512);
+sysCallNo = [physicalSP - 1];
+
+if(sysCallNo == 8) then
+	alias counter S3;
+	counter = 0;
+	while(counter < 32) do
+		if([READY_LIST + 32*counter + 1] == 0) then
+			break;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	if(counter == 32) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+
+	alias childPCB S4;
+	childPCB = counter;
+	[READY_LIST + 32*childPCB] = childPCB;
+
+	counter = 0;
+	i = 0;
+	alias numPages S5;
+	alias numFreePages S6;
+	numPages = 0;
+	numFreePages = 0;
+
+	while(counter < 4) do
+		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1]=="11") then
+			numPages = numPages + 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	counter = 0;
+	while(counter<64) do
+		if([1280 + counter] == 0) then
+			numFreePages = numFreePages + 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+		
+	if(numFreePages < numPages) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+
+	alias childPTBR S7;
+	childPTBR = 1024 + childPCB*8;
+	counter = 0;
+	while(counter<numPages) do
+		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1] == "11") then
+			i = 0;
+			while(i<64) do
+				if([1280 + i] == 0) then
+					[childPTBR + 2*counter] = i;
+					[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+					[1280 + i] = 1;
+					break;
+				endif;
+				i = i+1;
+			endwhile;
+			i = 0;
+			while(i<512) do
+				[[childPTBR + 2*counter]*512 + i] = [[PTBR + 2*counter]*512 + i];
+				i = i + 1;
+			endwhile;
+			[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+		endif;
+		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
+			[childPTBR + 2*counter + 0] = [PTBR + 2*counter + 0];
+			[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+		endif;
+		counter = counter + 1;
+	endwhile;
+	
+	i = READY_LIST + 32*childPCB;
+	[i + 5] = childPTBR;
+	[i + 4] = [physicalSP];
+	[i + 3] = SP - 1;
+	[i + 2] = BP;
+	[i + 6] = PTLR;
+	[i + 7] = R0;
+	[i + 8] = R1;
+	[i + 9] = R2;
+	[i + 10] = R3;
+	[i + 11] = R4;
+	[i + 12] = R5;
+	[i + 13] = R6;
+	[i + 14] = R7;
+
+	counter = 0;
+	while(counter < 8) do
+		[i + 15 + 2*counter] = [READY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter];
+		[i + 15 + 2*counter + 1] = [READY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter + 1];
+		if([i + 15 + 2*counter]!=-1) then
+			[FILE_TABLE + 2*[i + 15 + 2*counter] + 1] = [FILE_TABLE + 2*[i + 15 + 2*counter] + 1] + 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	[i + 1] = 1;
+	[physicalSP - 2] = childPCB;
+
+	alias childPhysicalSP S8;
+	childPhysicalSP = [childPTBR + (SP-1)/512]*512 + (SP%512);
+	[childPhysicalSP - 1] = -1;
+	ireturn;
+endif;
+	
+
+
+
+
+
+
+
+
+		
+
+
+
+
+
+
+
+			
+						
+
+	

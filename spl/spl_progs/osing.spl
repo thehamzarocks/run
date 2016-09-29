@@ -72,7 +72,7 @@ while(counter<=1343) do
 	counter = counter + 1;
 endwhile;
 counter = 1280;
-while(counter<=1304) do
+while(counter<=1280+28) do
 	[counter] = 1;
 	counter = counter + 1;
 endwhile;

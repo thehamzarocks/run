@@ -6,7 +6,7 @@ sysCallNo = [physicalSP - 1];
 
 if(sysCallNo==8) then
 	alias counter S2;
-	while(counter<32) do
+	while(counter<32) do //find a free PCB
 		if([READY_LIST + 32*counter + 1]==0) then //pcb is free
 			break;
 		endif;
@@ -51,34 +51,112 @@ if(sysCallNo==8) then
 	alias pagenum S7;
 	alias validpage S8;
 	alias childPTBR S9;
+
+	alias page0 S10;
+	alias page1 S11;
+	alias page2 S12;
+	alias page3 S13;
+
+	page0 = -1;
+	page1 = -1;
+	page2 = -1;
+	page3 = -1;
 	
-	childPTBR = PTBR + 8*PCBIndex;
+	pagenum = 0;
 	counter = 0;
-	while(counter < 64 && pagenum<numPages) do
-		if([1280 + counter] == 0) then
-			if([PTBR + pagenum*2 + 1]=="01" || [PTBR + pagenum*2 + 1]=="11") then
-				validpage = [PTBR + pagenum*2 + 0];
-				i = 0;
-				while(i<512) do
-					[counter*512 + i] = [validpage*512 + i];
-					i = i + 1;
-				endwhile;
-				[childPTBR + 2*pagenum + 0] = counter;
-				[childPTBR + 2*pagenum + 1] = [PTBR + pagenum*2 + 1];
-				pagenum = pagenum+1;
-			endif;
-			else if([PTBR + pagenum*2 + 1]!="01" || [PTBR + pagenum*2 + 1]=="11") then
-				[childPTBR + 2*pagenum + 0] = [PTBR + 2*pagenum + 0];
-				[childPTBR + 2*pagenum + 1] = [PTBR + 2*pagenum + 1];
+	while(counter < 64 && pagenum < numPages) do
+		if([1280 + counter] == 0) then //free memory page
+			while([PTBR + 2*pagenum + 1]!="01" || [PTBR + 2*pagenum + 1]!="11") do
 				pagenum = pagenum + 1;
+			endwhile;
+			if(pagenum==0) then
+				[1280 + counter] = 1;
+				page0 = counter;
 			endif;
+			if(pagenum==1) then
+				[1280 + counter] = 1;
+				page1 = counter;
+			endif;
+			if(pagenum==2) then	
+				[1280 + counter] = 1;
+				page2 = counter;
+			endif;
+			if(pagenum==3) then
+				[1280 + counter] = 1;
+				page3 = counter;
+			endif;
+			if(pagenum>=4) then
+				break;
+			endif;
+			pagenum = pagenum + 1;
 		endif;
 		counter = counter + 1;
 	endwhile;
 
+	if(page0 != -1) then //copy the contents of each valid page to the child process
+		counter = 0;
+		while(counter < 512) do
+			[page0*512 + counter] = [PTBR + 2*0 + 0]*512 + counter;
+			counter = counter + 1;
+		endwhile;
+	endif;
+	if(page1 != -1) then
+		counter = 0;
+		while(counter < 512) do
+			[page1*512 + counter] = [PTBR + 2*1 + 0]*512 + counter;
+			counter = counter + 1;
+		endwhile;
+	endif;
+	if(page2 != -1) then
+		counter = 0;
+		while(counter < 512) do
+			[page2*512 + counter] = [PTBR + 2*2 + 0]*512 + counter;
+			counter = counter + 1;
+		endwhile;
+	endif;
+	if(page3 != -1) then
+		counter = 0;
+		while(counter < 512) do
+			[page3*512 + counter] = [PTBR + 2*3 + 0]*512 + counter;
+			counter = counter + 1;
+		endwhile;
+	endif;
+
+	childPTBR = PTBR + 8*PCBIndex;
+	if(page0!=-1) then
+		[childPTBR + 0] = page0;
+	endif;
+	if(page0==-1) then
+		[childPTBR + 0] = [PTBR + 0];
+	endif;
+	if(page1!=-1) then
+		[childPTBR + 2] = page1;
+	endif;
+	if(page0==-1) then
+		[childPTBR + 2]= [PTBR + 2];
+	endif;
+	if(page2!=-1) then
+		[childPTBR + 4] = page2;
+	endif;
+	if(page2==-1) then
+		[childPTBR + 4] = [PTBR + 4];
+	endif;
+	if(page3!=-1) then
+		[childPTBR + 6] = [PTBR + 6];
+	endif;
+	if(page3==-1) then
+		[childPTBR + 6] = [PTBR + 6];
+	endif;
+
+	counter = 0;
+	while(counter<4) do
+		[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+		counter = counter+1;
+	endwhile;
+
 	[READY_LIST + 32*PCBIndex + 5] = childPTBR;
 	[READY_LIST + 32*PCBIndex + 4] = [physicalSP];	
-	[READY_LIST + 32*PCBIndex + 3] = [PTBR + 32*(PTBR-1024)/8 + 3]-1;
+	[READY_LIST + 32*PCBIndex + 3] = SP - 1;
 	[READY_LIST + 32*PCBIndex + 2] = BP;
 	[READY_LIST + 32*PCBIndex + 6] = PTLR;
 	[READY_LIST + 32*PCBIndex + 7] = R0;
@@ -87,9 +165,59 @@ if(sysCallNo==8) then
 	[READY_LIST + 32*PCBIndex + 10] = R3;
 	[READY_LIST + 32*PCBIndex + 11] = R4;
 	[READY_LIST + 32*PCBIndex + 12] = R5;
-	[READY_LIST + 32*PCBIndex + 2] = R6;
-	[READY_LIST + 32*PCBIndex + 2] = R7;
+	[READY_LIST + 32*PCBIndex + 13] = R6;
+	[READY_LIST + 32*PCBIndex + 14] = R7;
 
+	counter = 0;
+	alias ppid S14;
+	//alias i S15;
+	ppid = (PTBR-1024)/8; 
+	while(counter<8) do
+		i = READY_LIST + 32*PCBIndex + 15 + 2*counter;
+		[i + 0] = [READY_LIST + 32*ppid + 15 + 2*counter + 0];
+		if([i + 0] != -1) then
+			[FILE_TABLE + [i + 0]] = [FILE_TABLE + [i + 0]] + 1;
+		endif; 
+		[i+1] = [READY_LIST + 32*ppid + 15 + 2*counter + 1];
+		counter = counter + 1;
+	endwhile;
+
+	[READY_LIST + 32*PCBIndex + 1] = 1;
+	[physicalSP - 2] = PCBIndex;
+	
+	i = [childPTBR + 2*(SP-1)/512]*512 + (SP%512);
+	[i-1] = -2;
+	ireturn;
+endif;	
+	
+	
+
+
+
+
+
+//	counter = 0;
+//	while(counter < 64 && pagenum<numPages) do
+//		if([1280 + counter] == 0) then
+//			if([PTBR + pagenum*2 + 1]=="01" || [PTBR + pagenum*2 + 1]=="11") then
+//				validpage = [PTBR + pagenum*2 + 0];
+//				i = 0;
+//				while(i<512) do
+//					[counter*512 + i] = [validpage*512 + i];
+//					i = i + 1;
+//				endwhile;
+//				[childPTBR + 2*pagenum + 0] = counter;
+//				[childPTBR + 2*pagenum + 1] = [PTBR + pagenum*2 + 1];
+//				pagenum = pagenum+1;
+//			endif;
+//			else if([PTBR + pagenum*2 + 1]!="01" || [PTBR + pagenum*2 + 1]=="11") then
+//				[childPTBR + 2*pagenum + 0] = [PTBR + 2*pagenum + 0];
+//				[childPTBR + 2*pagenum + 1] = [PTBR + 2*pagenum + 1];
+//				pagenum = pagenum + 1;
+//			endif;
+//		endif;
+//		counter = counter + 1;
+//	endwhile;
 
 
 
