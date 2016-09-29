@@ -4,10 +4,8 @@ alias sysCallNo S2;
 
 physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 sysCallNo = [physicalSP - 1];
-breakpoint;
 
 if(sysCallNo == 8) then
-	breakpoint;
 	alias counter S3;
 	counter = 0;
 	while(counter < 32) do
@@ -111,8 +109,10 @@ if(sysCallNo == 8) then
 	[physicalSP - 2] = childPCB;
 
 	alias childPhysicalSP S8;
-	childPhysicalSP = [childPTBR + (SP-1)/512]*512 + (SP%512);
+	childPhysicalSP = [childPTBR + 2*(SP-1)/512]*512 + (SP%512);
 	[childPhysicalSP - 1] = -1;
+	i = [physicalSP];
+	breakpoint;
 	ireturn;
 endif;
 	

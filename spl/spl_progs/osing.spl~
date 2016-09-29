@@ -62,7 +62,7 @@ load(24,18);
 
 while(counter < 16) do //initialize per-process open file table of the init process to invalids
 	[READY_LIST + 15 + counter] = -1;
-	[READY_LIST + 15 + counter] = -1;
+	[READY_LIST + 15 + counter + 1] = -1;
 	counter = counter + 2;
 endwhile;
 

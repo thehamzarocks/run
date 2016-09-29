@@ -62,7 +62,7 @@ load(24,18);
 
 while(counter < 16) do //initialize per-process open file table of the init process to invalids
 	[READY_LIST + 15 + counter] = -1;
-	[READY_LIST + 15 + counter] = -1;
+	[READY_LIST + 15 + counter + 1] = -1;
 	counter = counter + 2;
 endwhile;
 
@@ -82,6 +82,8 @@ while(counter<32) do
 	[READY_LIST + counter*32 + 1] = 0; //set the state field of each process to 0
 	counter = counter + 1;
 endwhile;
+
+[READY_LIST + 1] = 2;
 	
 
 ireturn; //transfer control to the user program

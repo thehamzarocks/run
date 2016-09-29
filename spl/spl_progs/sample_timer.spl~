@@ -50,7 +50,7 @@ newphysicalSP = ([PTBR + 2*(SP/512)]*512) + (SP%512);
 [newphysicalSP] = [newPCB + 4]; //Stores the IP field value of PCB on top of the stack
 [newPCB + 1] = 2;
 
-
+breakpoint;
 
 ireturn;
 
