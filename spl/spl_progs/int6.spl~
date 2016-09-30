@@ -23,6 +23,7 @@ if(sysCallNo == 9) then
 	endif;
 	
 	load(1,[FAT + 8*i + 2]);
+	breakpoint;
 	alias numCodeNew S5;
 	alias numCodeOld S6;
 	
@@ -90,6 +91,7 @@ if(sysCallNo == 9) then
 			endif;
 			counter = counter + 1;
 		endwhile;
+	endif;
 
 		
 
@@ -118,7 +120,6 @@ if(sysCallNo == 9) then
 	endwhile;
 
 	SP = 3*512;
-	//[physicalSP] = 0;
 	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 	[physicalSP] = 0;
 	ireturn;

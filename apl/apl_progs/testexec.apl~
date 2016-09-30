@@ -1,0 +1,7 @@
+integer main() {
+	integer status;
+	status = exec("even.xsm");
+	print(status);
+	return 0;
+}
+

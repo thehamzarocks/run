@@ -82,6 +82,8 @@ while(counter<32) do
 	[READY_LIST + counter*32 + 1] = 0; //set the state field of each process to 0
 	counter = counter + 1;
 endwhile;
+
+[READY_LIST + 1] = 2;
 	
 
 ireturn; //transfer control to the user program
