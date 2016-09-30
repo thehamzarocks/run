@@ -112,7 +112,7 @@ if(sysCallNo == 4) then
 	load(1,[FAT + 8*fatindex +2]); //load the basic block to the scratchpad
 	i=0;
 	while(i<256) do
-		[512 + i] = -1; //set the basic block entry to -1
+		[512 + i] = ""; //set the basic block entry to ""
 		i = i + 1;
 	endwhile;
 	store(1,[FAT + 8*fatindex + 2]); //store the basic block back to the disk
