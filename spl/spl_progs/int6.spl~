@@ -58,47 +58,42 @@ if(sysCallNo == 9) then
 	endif;
 
 	alias numFree S7;
-	numFree = 0;
+
 	if(numCodeOld < numCodeNew) then
 		counter = 0;
-		while(counter < 3) do
-			if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter+1]=="10") then
-				if([512 + counter]!=-1) then
-					i = 0;
-					while(i < 64) do
-						if([1280 + i]==0) then
-							numFree = numFree + 1;
-						endif;
-						i = i + 1;
-					endwhile;
-				endif;
+		numFree = 0;
+		while(counter<64) do
+			if([1280 + 64]==0) then
+				numFree = numFree + 1;
 			endif;
 			counter = counter + 1;
 		endwhile;
-
+		
 		if(numFree < (numCodeNew - numCodeOld)) then
 			[physicalSP - 2] = -1;
 			ireturn;
 		endif;
 
-		while(counter < 3) do	
+		counter = 0;
+		while(counter < 3) do
 			if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
-				if([512 + counter]!=-1) then
-					i = 0;
-					while(i < 64) do
-						if([1280 + i] == 0) then
-							[PTBR + 2*counter] = i;
-							[PTBR + 2*counter + 1] = "01";
-							[1280 + i] = 1;
-							break;
-						endif;
-						i = i + 1;
-					endwhile;
-				endif;
+				i = 0;
+				while(i<64) do
+					if([1280 + i] == 0) then
+						[1280 + i] = 1;
+						[PTBR + 2*counter] = i;
+						[PTBR + 2*counter + 1] = "01";
+						break;
+					endif;
+					i = i + 1;
+				endwhile;
 			endif;
 			counter = counter + 1;
 		endwhile;
-	endif;
+
+		
+
+				
 
 	counter = 0;
 	while(counter<3) do
@@ -123,6 +118,8 @@ if(sysCallNo == 9) then
 	endwhile;
 
 	SP = 3*512;
+	//[physicalSP] = 0;
+	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 	[physicalSP] = 0;
 	ireturn;
 endif;
