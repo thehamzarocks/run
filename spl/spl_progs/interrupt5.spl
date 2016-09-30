@@ -5,10 +5,10 @@ alias sysCallNo S2;
 physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 sysCallNo = [physicalSP - 1];
 
-if(sysCallNo == 8) then
+if(sysCallNo == 8) then	//fork system call
 	alias counter S3;
 	counter = 0;
-	while(counter < 32) do
+	while(counter < 32) do //search for free pcb for the new process
 		if([READY_LIST + 32*counter + 1] == 0) then
 			break;
 		endif;
@@ -31,7 +31,7 @@ if(sysCallNo == 8) then
 	numPages = 0;
 	numFreePages = 0;
 
-	while(counter < 4) do
+	while(counter < 4) do //find the number of pages required by the parent process
 		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1]=="11") then
 			numPages = numPages + 1;
 		endif;
@@ -39,7 +39,7 @@ if(sysCallNo == 8) then
 	endwhile;
 
 	counter = 0;
-	while(counter<64) do
+	while(counter<64) do //find the number of free pages in memory for the child process
 		if([1280 + counter] == 0) then
 			numFreePages = numFreePages + 1;
 		endif;
@@ -54,10 +54,10 @@ if(sysCallNo == 8) then
 	alias childPTBR S7;
 	childPTBR = 1024 + childPCB*8;
 	counter = 0;
-	while(counter<numPages) do
+	while(counter<numPages) do //for each page of the parent process
 		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1] == "11") then
 			i = 0;
-			while(i<64) do
+			while(i<64) do //search for a free page, set up the page table entry of the child process for that page and set the page to used
 				if([1280 + i] == 0) then
 					[childPTBR + 2*counter] = i;
 					[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
@@ -68,23 +68,24 @@ if(sysCallNo == 8) then
 			endwhile;
 			i = 0;
 			while(i<512) do
-				[[childPTBR + 2*counter]*512 + i] = [[PTBR + 2*counter]*512 + i];
+				[[childPTBR + 2*counter]*512 + i] = [[PTBR + 2*counter]*512 + i]; //copy the pages of the parent to the child
 				i = i + 1;
 			endwhile;
 			[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
 		endif;
-		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
+		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then //for invalid pages, simply copy the page table entries
 			[childPTBR + 2*counter + 0] = [PTBR + 2*counter + 0];
 			[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
 		endif;
 		counter = counter + 1;
 	endwhile;
 	
-	i = READY_LIST + 32*childPCB;
+	i = READY_LIST + 32*childPCB; //set up the PCB of the child process
 	[i + 5] = childPTBR;
 	[i + 4] = [physicalSP];
-	[i + 3] = SP - 1;
-	[i + 2] = BP;
+	[i + 3] = SP - 1; //when the timer schedules this process, it will increment this sp, store the value of ip on top of the stack and then call ireturn. SP is the parent top, but the child
+			 //doesn't have this ip on the top.
+	[i + 2] = BP; //copy the contents of the registers and not the PCB values themselves as they might have changed durign execution
 	[i + 6] = PTLR;
 	[i + 7] = R0;
 	[i + 8] = R1;
@@ -96,7 +97,7 @@ if(sysCallNo == 8) then
 	[i + 14] = R7;
 
 	counter = 0;
-	while(counter < 8) do
+	while(counter < 8) do //copy the per process open file table entries. Increment the file open count in the system wide open file table
 		[i + 15 + 2*counter] = [READY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter];
 		[i + 15 + 2*counter + 1] = [READY_LIST + 32*(PTBR-1024)/8 + 15 + 2*counter + 1];
 		if([i + 15 + 2*counter]!=-1) then
@@ -105,14 +106,14 @@ if(sysCallNo == 8) then
 		counter = counter + 1;
 	endwhile;
 
-	[i + 1] = 1;
-	[physicalSP - 2] = childPCB;
+	[i + 1] = 1; //set the state to ready
+	[physicalSP - 2] = childPCB; //set the return value of the parent process as the child's pid
 
 	alias childPhysicalSP S8;
-	childPhysicalSP = [childPTBR + 2*(SP-1)/512]*512 + (SP%512);
-	[childPhysicalSP - 1] = -1;
-	i = [physicalSP];
-	breakpoint;
+	childPhysicalSP = [childPTBR + 2*(SP-1)/512]*512 + (SP%512); 
+	[childPhysicalSP - 1] = -2; //
+	//i = [physicalSP];
+	//breakpoint;
 	ireturn;
 endif;
 	
