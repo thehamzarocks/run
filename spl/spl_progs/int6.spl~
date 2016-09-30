@@ -123,8 +123,6 @@ if(sysCallNo == 9) then
 	endwhile;
 
 	SP = 3*512;
-	//[physicalSP] = 0;
-	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 	[physicalSP] = 0;
 	ireturn;
 endif;
