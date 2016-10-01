@@ -54,7 +54,7 @@ if(sysCallNo == 8) then	//fork system call
 	alias childPTBR S7;
 	childPTBR = 1024 + childPCB*8;
 	counter = 0;
-	while(counter<numPages) do //for each page of the parent process
+	while(counter<4) do //for each page of the parent process
 		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1] == "11") then
 			i = 0;
 			while(i<64) do //search for a free page, set up the page table entry of the child process for that page and set the page to used

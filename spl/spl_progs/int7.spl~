@@ -33,6 +33,8 @@ if(sysCallNo == 10) then
 				[FILE_TABLE + 2*[i+ 2*counter]] = -1;
 			endif;
 		endif;
+		[i + 2*counter] = -1;
+		[i + 2*counter + 1] = -1;
 		counter = counter + 1;
 	endwhile;
 
@@ -81,7 +83,7 @@ if(sysCallNo == 10) then
 	//i = [PTBR + 2*(SP/512)]*512 + (SP%512);
 	breakpoint;
 	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
-	[physical] = [i + 4];
+	[physicalSP] = [i + 4];
 	[i + 1] = 2;
 	ireturn;
 endif;

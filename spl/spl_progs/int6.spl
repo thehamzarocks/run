@@ -75,7 +75,7 @@ if(sysCallNo == 9) then
 		endif;
 
 		counter = 0;
-		while(counter < 3) do
+		while(counter < numCodeNew) do
 			if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
 				i = 0;
 				while(i<64) do
