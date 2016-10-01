@@ -22,8 +22,7 @@ if(sysCallNo == 9) then
 		ireturn;
 	endif;
 	
-	load(1,[FAT + 8*i + 2]);
-	breakpoint;
+	load(1,[FAT + 8*counter + 2]);
 	alias numCodeNew S5;
 	alias numCodeOld S6;
 	

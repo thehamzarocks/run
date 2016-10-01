@@ -1,0 +1,88 @@
+alias i S0;
+alias physicalSP S1;
+alias sysCallNo S2;
+
+physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+sysCallNo = [physicalSP -1];
+i=53;
+breakpoint;
+
+if(sysCallNo == 10) then
+	alias counter S3;
+	counter = 0;
+	while(counter<32) do
+		if([READY_LIST + 32*counter + 1] == 1) then	
+			break;
+		endif;
+		counter = counter + 1;
+	endwhile;
+	
+	if(counter == 32) then
+		halt;
+	endif;
+
+	alias PID S4;
+	PID = (PTBR - 1024)/8;
+	
+	counter = 0;
+	i = READY_LIST + 32*PID + 15;
+	while(counter < 8) do
+		if([i + 2*counter] != -1) then
+			[FILE_TABLE + 2*[i + 2*counter] + 1] = [FILE_TABLE + 2*[i+2*counter] + 1] - 1;
+			if([FILE_TABLE + 2*[i + 2*counter] + 1] == 0) then
+				[FILE_TABLE + 2*[i+ 2*counter]] = -1;
+			endif;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	[READY_LIST + 32*PID + 1] = 0;
+	
+	counter = 0;
+	while(counter < 4) do
+		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
+			[1280 + [PTBR + 2*counter]] = 0;
+		endif;
+		[PTBR + 2*counter] = -1;
+		[PTBR + 2*counter + 1] = "00";
+		counter = counter + 1;
+	endwhile;
+	i=7;
+	breakpoint;
+	
+	counter = (PID + 1)%32;
+	while(counter !=PID) do
+		if([READY_LIST + 32*counter + 1]==1) then	
+			break;
+		endif;
+		counter = (counter + 1)%32;
+	endwhile;
+
+	i=201;
+	breakpoint;
+
+	alias newPCB S5;
+	newPCB = counter;
+	i = READY_LIST + 32*newPCB;
+	BP = [i + 2];
+	SP = [i + 3];
+	PTBR = [i + 5];
+	PTLR = [i + 6];
+	R0 = [i + 7];
+	R1 = [i + 8];
+	R2 = [i + 9];
+	R3 = [i + 10];
+	R4 = [i + 11];
+	R5 = [i + 12];
+	R6 = [i + 13];
+	R7 = [i + 14];
+	
+	SP = SP + 1;
+	//i = [PTBR + 2*(SP/512)]*512 + (SP%512);
+	breakpoint;
+	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+	[physicalSP] = [i + 4];
+	[i + 1] = 2;
+	ireturn;
+endif;
+
