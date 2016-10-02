@@ -7,7 +7,7 @@ integer main() {
 		print(i);
 		i = i+2;
 	endwhile;
-	//Exit();
+	Exit();
 	return 0;
 }
 	
