@@ -41,17 +41,36 @@ if(sysCallNo == 10) then
 	[READY_LIST + 32*PID + 1] = 0;
 	
 	counter = 0;
-	while(counter < 4) do
+	while(counter < 3) do
 		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
-			[1280 + [PTBR + 2*counter]] = 0;
+			[1280 + [PTBR + 2*counter]] = [1280 + [PTBR + 2*counter]] - 1;
+		endif;
+		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
+			if([PTBR + 2*counter]>=448) then
+				[6*512 + [PTBR + 2*counter]] = [6*512 + [PTBR + 2*counter]] - 1;
+			endif;
 		endif;
 		[PTBR + 2*counter] = -1;
 		[PTBR + 2*counter + 1] = "00";
 		counter = counter + 1;
 	endwhile;
-	i=7;
-	breakpoint;
 	
+	store(6,20);
+	
+	
+
+
+//	while(counter < 4) do
+//		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
+//			[1280 + [PTBR + 2*counter]] = 0;
+//		endif;
+//		[PTBR + 2*counter] = -1;
+//		[PTBR + 2*counter + 1] = "00";
+//		counter = counter + 1;
+//	endwhile;
+//	i=7;
+//	breakpoint;
+
 	counter = (PID + 1)%32;
 	while(counter !=PID) do
 		if([READY_LIST + 32*counter + 1]==1) then	

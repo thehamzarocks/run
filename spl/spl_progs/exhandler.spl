@@ -1,0 +1,114 @@
+alias i S0;
+alias Cause S1;
+alias VPagenum S2;
+alias Ip_addr S3;
+
+Cause = EFR % 10;
+VPagenum = (EFR / 10) % 100;
+Ip_addr = (EFR/1000);
+
+if(Cause != 0) then
+	print (EFR % 10);
+	inline "JMP 23*512"; 
+endif;
+
+if([PTBR + 2*VPagenum] == -1) then
+	inline "JMP 23*512";
+endif;
+
+alias counter S4;
+counter = 0;
+while(counter < 64) do
+	if([1280 + counter]==0) then
+		[1280 + counter] = 1;
+		i = counter;
+		break;
+	endif;
+	counter = counter + 1;
+endwhile;
+
+alias j S5;
+alias physicalpage S6;
+
+j = counter;
+
+if(counter == 64) then
+	counter = ((PTBR - 1024)/8 + 1) % 32;
+	while(1) do
+		i = 0;
+		while(i<3) do
+			if([1024 + 8*counter + 2*i + 1]=="01" && [1280 + [1024 + 8*counter + 2*i]]<=1) then
+				j = 448;
+				while(j<512) do
+					if([6*512 + j]==0) then
+						break;
+					endif;
+					j = j + 1;
+				endwhile;
+				
+				if(j==512) then
+					inline "JMP 23*512";
+				endif;
+	
+				physicalpage = [1024 + 8*counter + 2*i];
+				store([1024 + 8*counter + 2*i],j);
+				[6*512 + j] = 1;
+				[1024 + 8*counter + 2*i] = j;
+				[1024 + 8*counter + 2*i + 1] = "00";
+				break;
+			endif;
+
+			if([1024 + 8*counter + 2*i + 1]=="11") then 
+				[1024 + 8*counter + 2*i + 1] = "01";
+			endif;
+			i = i + 1;
+		endwhile;
+		if(i == 3) then
+			break;
+		endif;
+		counter = (counter + 1) % 32;
+	endwhile;
+	j = physicalpage;
+endif;
+
+
+
+alias physvpage S7;
+physvpage = [PTBR + 2*VPagenum];
+if(physvpage>=21 || physvpage <=447) then 
+	load(j,physvpage);
+endif;
+
+if(physvpage>=448) then
+	load(j,physvpage);
+	[6*512 + j] = [6*512 + j] - 1;
+endif;
+
+[PTBR + 2*VPagenum] = j;
+[PTBR + 2*VPagenum + 1] = "11";
+
+SP = SP + 1;
+alias physicalSP S8;
+physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+[physicalSP] = Ip_addr;
+ireturn;
+
+				
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				
+		

@@ -41,7 +41,7 @@ if(sysCallNo == 5) then
 	basblockindex = lseek/512;
 	alias datablock S11;
 	if([512 + basblockindex]==-1) then //the data block does not exist. Create one
-		alias i S10;
+		alias i S12;
 		i = 0;
 		while(i<448) do //traverse the disk free list to find an unused block
 			if([6*512 + i]==0) then 

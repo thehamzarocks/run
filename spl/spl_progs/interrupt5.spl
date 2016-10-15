@@ -26,66 +26,111 @@ if(sysCallNo == 8) then	//fork system call
 
 	counter = 0;
 	i = 0;
-	alias numPages S5;
-	alias numFreePages S6;
-	numPages = 0;
-	numFreePages = 0;
 
-	while(counter < 4) do //find the number of pages required by the parent process
-		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1]=="11") then
-			numPages = numPages + 1;
+
+	while(counter<64) do //find one free page in memory for the stack of the  child process
+		if([1280 + counter] == 0) then 
+			break;
 		endif;
 		counter = counter + 1;
 	endwhile;
 
-	counter = 0;
-	while(counter<64) do //find the number of free pages in memory for the child process
-		if([1280 + counter] == 0) then
-			numFreePages = numFreePages + 1;
-		endif;
-		counter = counter + 1;
-	endwhile;
-		
-	if(numFreePages < numPages) then
+	if(counter ==64) then
 		[physicalSP - 2] = -1;
 		ireturn;
 	endif;
 
-	alias childPTBR S7;
+	[1280 + counter] = 1;
+	i = counter; //the free page for the stack
+
+	counter = 0; //copy the contents of the parent stack to the child stack
+	while(counter < 512) do
+		[512*i + counter] = [512*[PTBR + 2*(SP/512)] + counter];
+		counter = counter + 1;
+	endwhile;
+
+	alias childPTBR S5;
 	childPTBR = 1024 + childPCB*8;
+	[childPTBR + 6] = i;
+	[childPTBR + 7] = "01";
+	
 	counter = 0;
-	while(counter<4) do //for each page of the parent process
-		if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1] == "11") then
-			i = 0;
-			while(i<64) do //search for a free page, set up the page table entry of the child process for that page and set the page to used
-				if([1280 + i] == 0) then
-					[childPTBR + 2*counter] = i;
-					[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
-					[1280 + i] = 1;
-					break;
-				endif;
-				i = i+1;
-			endwhile;
-			i = 0;
-			while(i<512) do
-				[[childPTBR + 2*counter]*512 + i] = [[PTBR + 2*counter]*512 + i]; //copy the pages of the parent to the child
-				i = i + 1;
-			endwhile;
-			[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+	while(counter<3) do
+		[childPTBR + 2*counter] = [PTBR + 2*counter];
+		[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+		if([childPTBR + 2*counter + 1] == "01" || [childPTBR + 2*counter + 1] == "11") then
+			[1280 + [childPTBR + 2*counter]] = [1280 + [childPTBR + 2*counter]] + 1;
 		endif;
-		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then //for invalid pages, simply copy the page table entries
-			[childPTBR + 2*counter + 0] = [PTBR + 2*counter + 0];
-			[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+		if([childPTBR + 2*counter + 1]=="00" || [childPTBR + 2*counter + 1]=="10") then
+			if([childPTBR + 2*counter]>=448) then
+				[6*512 + [childPTBR + 2*counter]] = [6*512 + [childPTBR + 2*counter]] + 1;
+			endif;
 		endif;
 		counter = counter + 1;
 	endwhile;
+	
+
+
+	//alias numPages S5;
+	//alias numFreePages S6;
+	//numPages = 0;
+	//numFreePages = 0;
+
+	//while(counter < 4) do //find the number of pages required by the parent process
+	//	if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1]=="11") then
+	//		numPages = numPages + 1;
+	//	endif;
+	//	counter = counter + 1;
+	//endwhile;
+
+	//counter = 0;
+	//while(counter<64) do //find the number of free pages in memory for the child process
+	//	if([1280 + counter] == 0) then
+	//		numFreePages = numFreePages + 1;
+	//	endif;
+	//	counter = counter + 1;
+	//endwhile;
+		
+	//if(numFreePages < numPages) then
+	//	[physicalSP - 2] = -1;
+	//	ireturn;
+	//endif;
+
+	//alias childPTBR S7;
+	//childPTBR = 1024 + childPCB*8;
+	//counter = 0;
+	//while(counter<4) do //for each page of the parent process
+	//	if([PTBR + 2*counter + 1] == "01" || [PTBR + 2*counter + 1] == "11") then
+	//		i = 0;
+	//		while(i<64) do //search for a free page, set up the page table entry of the child process for that page and set the page to used
+	//			if([1280 + i] == 0) then
+	//				[childPTBR + 2*counter] = i;
+	//				[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+	//				[1280 + i] = 1;
+	//				break;
+	//			endif;
+	//			i = i+1;
+	//		endwhile;
+	//		i = 0;
+	//		while(i<512) do
+	//			[[childPTBR + 2*counter]*512 + i] = [[PTBR + 2*counter]*512 + i]; //copy the pages of the parent to the child
+	//			i = i + 1;
+	//		endwhile;
+	//		[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+	//	endif;
+	//	if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then //for invalid pages, simply copy the page table entries
+	//		[childPTBR + 2*counter + 0] = [PTBR + 2*counter + 0];
+	//		[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
+	//	endif;
+	//	counter = counter + 1;
+	//endwhile;
 	
 	i = READY_LIST + 32*childPCB; //set up the PCB of the child process
 	[i + 5] = childPTBR;
 	[i + 4] = [physicalSP];
 	[i + 3] = SP - 1; //when the timer schedules this process, it will increment this sp, store the value of ip on top of the stack and then call ireturn. SP is the parent top, but the child
 			 //doesn't have this ip on the top.
-	[i + 2] = BP; //copy the contents of the registers and not the PCB values themselves as they might have changed durign execution
+	[i + 2] = BP; //copy the contents of the registers and not the PCB values themselves as they might have changed during execution
 	[i + 6] = PTLR;
 	[i + 7] = R0;
 	[i + 8] = R1;
