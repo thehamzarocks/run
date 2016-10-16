@@ -9,6 +9,9 @@ Ip_addr = (EFR/1000);
 
 if(Cause != 0) then
 	print (EFR % 10);
+	alias physicalSP S8;
+	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+	[physicalSP - 1] = 10;
 	inline "JMP 23*512"; 
 endif;
 
