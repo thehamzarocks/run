@@ -35,7 +35,7 @@ if(sysCallNo == 8) then	//fork system call
 		counter = counter + 1;
 	endwhile;
 
-	if(counter ==64) then
+	if(counter == 64) then
 		[physicalSP - 2] = -1;
 		ireturn;
 	endif;
