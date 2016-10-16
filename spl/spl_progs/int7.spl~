@@ -51,7 +51,7 @@ if(sysCallNo == 10) then
 			endif;
 		endif;
 		[PTBR + 2*counter] = -1;
-		[PTBR + 2*counter + 1] == "00";
+		[PTBR + 2*counter + 1] = "00";
 		counter = counter + 1;
 	endwhile;
 	
