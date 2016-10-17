@@ -155,6 +155,13 @@ if(sysCallNo == 9) then
 	ireturn;
 endif;
 
+if(sysCallNo == 11) then
+	[physicalSP - 2] = (PTBR - 1024)/8;
+	ireturn;
+endif;
+
+	
+
 					
 					
 					
