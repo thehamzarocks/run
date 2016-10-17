@@ -10,7 +10,7 @@ breakpoint;
 if(sysCallNo == 10) then
 	alias counter S3;
 	counter = 0;
-	while(counter<32) do
+	while(counter<32) do //if no  ready processes, halt the machine
 		if([READY_LIST + 32*counter + 1] == 1) then	
 			break;
 		endif;
@@ -22,11 +22,20 @@ if(sysCallNo == 10) then
 	endif;
 
 	alias PID S4;
-	PID = (PTBR - 1024)/8;
+	PID = (PTBR - 1024)/8; //get the pid of the current process
+
+	counter = 0;
+	while(counter < 32) do
+		if([READY_LIST + 32*counter + 1] == PID + 100) then
+			[READY_LIST + 32*counter + 1] = 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
 	
 	counter = 0;
 	i = READY_LIST + 32*PID + 15;
-	while(counter < 8) do
+	while(counter < 8) do //close all open files and reset the per process open file table
 		if([i + 2*counter] != -1) then
 			[FILE_TABLE + 2*[i + 2*counter] + 1] = [FILE_TABLE + 2*[i+2*counter] + 1] - 1;
 			if([FILE_TABLE + 2*[i + 2*counter] + 1] == 0) then
@@ -38,24 +47,24 @@ if(sysCallNo == 10) then
 		counter = counter + 1;
 	endwhile;
 
-	[READY_LIST + 32*PID + 1] = 0;
+	[READY_LIST + 32*PID + 1] = 0; //set the state to terminated
 	
 	counter = 0;
-	while(counter < 3) do
-		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then
+	while(counter < 3) do 
+		if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then //if valid page, decrement entry in memory free list
 			[1280 + [PTBR + 2*counter]] = [1280 + [PTBR + 2*counter]] - 1;
 		endif;
-		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then
+		if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then //if swap block, decrement entry in disk free list
 			if([PTBR + 2*counter]>=448) then
 				[6*512 + [PTBR + 2*counter]] = [6*512 + [PTBR + 2*counter]] - 1;
 			endif;
 		endif;
-		[PTBR + 2*counter] = -1;
+		[PTBR + 2*counter] = -1; //invalidate page table entries
 		[PTBR + 2*counter + 1] = "00";
 		counter = counter + 1;
 	endwhile;
 	
-	store(6,20);
+	store(6,20); //commit df back to disk
 	
 	
 
@@ -70,8 +79,9 @@ if(sysCallNo == 10) then
 //	endwhile;
 //	i=7;
 //	breakpoint;
-
-	counter = (PID + 1)%32;
+	
+	i = 9876;
+	counter = (PID + 1)%32; //search for the next ready process
 	while(counter !=PID) do
 		if([READY_LIST + 32*counter + 1]==1) then	
 			break;
@@ -79,12 +89,10 @@ if(sysCallNo == 10) then
 		counter = (counter + 1)%32;
 	endwhile;
 
-	i=201;
-	breakpoint;
 
 	alias newPCB S5;
 	newPCB = counter;
-	i = READY_LIST + 32*newPCB;
+	i = READY_LIST + 32*newPCB; //get the register values from the pcb of the new process
 	BP = [i + 2];
 	SP = [i + 3];
 	PTBR = [i + 5];
@@ -98,12 +106,78 @@ if(sysCallNo == 10) then
 	R6 = [i + 13];
 	R7 = [i + 14];
 	
-	SP = SP + 1;
+	SP = SP + 1; //space to store the IP value
 	//i = [PTBR + 2*(SP/512)]*512 + (SP%512);
-	breakpoint;
 	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
-	[physicalSP] = [i + 4];
-	[i + 1] = 2;
+	[physicalSP] = [i + 4]; //store the IP value on top of the stack
+	[i + 1] = 2; //set the state to running
 	ireturn;
 endif;
+
+if(sysCallNo == 13) then
+	alias WaitingPID S3;
+	WaitingPID = [physicalSP - 3];
+	if([READY_LIST + 32*WaitingPID + 1]==2 || [READY_LIST + 32*WaitingPID + 1]==0) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	[READY_LIST + 32*(PTBR - 1024)/8 + 1] = 100 + WaitingPID;
+	
+
+
+
+
+
+
+
+//	alias counter S4;
+//	counter = ((PTBR-1024)/8 + 1)%32;
+//	while(counter != (PTBR-1024)/8) do
+//		if([READY_LIST + 32*counter + 1] == 1) then
+//			break;
+//		endif;
+//		counter = (counter + 1)%32;
+//	endwhile;
+//
+//	i = READY_LIST + 32*counter;
+//	BP = [i + 2];
+//	SP = [i + 3];
+//	PTBR = [i + 5];
+//	PTLR = [i + 6];
+//	R0 = [i + 7];
+//	R1 = [i + 8];
+//	R2 = [i + 9];
+//	R3 = [i + 10];
+//	R4 = [i + 11];
+//	R5 = [i + 12];
+//	R6 = [i + 13];
+//	R7 = [i + 14];
+	
+//	SP = SP + 1;
+//	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+//	[physicalSP] = [i + 4];
+//	[i + 1] = 2;
+	[physicalSP - 2] = 0;
+	ireturn;
+endif;
+
+if(sysCallNo==14) then
+	i = 0;
+	while(i<32) do
+		if([READY_LIST + 32*i + 1] == 100 + (PTBR - 1024)/8) then
+			[READY_LIST + 32*i + 1] = 1;
+		endif;
+		i = i + 1;
+	endwhile;
+	[physicalSP - 2] = 0;
+	ireturn;
+endif;
+
+
+
+
+
+
+
 

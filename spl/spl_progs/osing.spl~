@@ -5,20 +5,29 @@ load(24,18);
 
 [READY_LIST + 0] = 0; //set pid of the init process to 0
 
-load(25,21); //load the code of the init program
-load(26,22);
-load(27,23); 
+//load(25,21); //load the code of the init program
+//load(26,22);
+//load(27,23); 
 
 PTBR = 1024; //Since init process has pid 0, its ptbr is set to 1024
 PTLR = 4; //Every process has 4 entries in its page table
 
-[PTBR + 0] = 25; //Physical page number for logical page 0
-[PTBR + 1] = "01"; //auxilary info for logical page 0
-[PTBR + 2] = 26;
-[PTBR + 3] = "01";
-[PTBR + 4] = 27;
-[PTBR + 5] = "01";
-[PTBR + 6] = 28; //for the stack
+//[PTBR + 0] = 25; //Physical page number for logical page 0
+//[PTBR + 1] = "01"; //auxilary info for logical page 0
+//[PTBR + 2] = 26;
+//[PTBR + 3] = "01";
+//[PTBR + 4] = 27;
+//[PTBR + 5] = "01";
+//[PTBR + 6] = 28; //for the stack
+//[PTBR + 7] = "01";
+
+[PTBR + 0] = 21;
+[PTBR + 1] = "00";
+[PTBR + 2] = 22;
+[PTBR + 3] = "00";
+[PTBR + 4] = 23;
+[PTBR + 5] = "00";
+[PTBR + 6] = 25;
 [PTBR + 7] = "01";
 
 load(9,3); //load timer interrupt routine
@@ -72,10 +81,17 @@ while(counter<=1343) do
 	counter = counter + 1;
 endwhile;
 counter = 1280;
-while(counter<=1280+28) do
+while(counter<=1280+25) do
 	[counter] = 1;
 	counter = counter + 1;
 endwhile;
+
+counter = 448; //set the swap area of the disk free list to unused
+while(6*512 + counter < 512) do
+	[6*512 + counter] = 0;
+	counter = counter + 1;
+endwhile;
+store(6,20); //overwrite perevious runs
 
 counter = 0;
 while(counter<32) do

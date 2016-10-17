@@ -160,6 +160,10 @@ if(sysCallNo == 11) then
 	ireturn;
 endif;
 
+if(sysCallNo == 12) then
+	[physicalSP - 2] = [READY_LIST + 32*(PTBR - 1024)/8 + 31];
+	ireturn;
+endif;
 	
 
 					
