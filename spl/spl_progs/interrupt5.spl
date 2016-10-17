@@ -56,15 +56,15 @@ if(sysCallNo == 8) then	//fork system call
 	
 	counter = 0;
 	while(counter<3) do
-		[childPTBR + 2*counter] = [PTBR + 2*counter];
+		[childPTBR + 2*counter] = [PTBR + 2*counter]; //copy the page table entries corresponding to code blocks
 		[childPTBR + 2*counter + 1] = [PTBR + 2*counter + 1];
-		if([childPTBR + 2*counter + 1] == "01" || [childPTBR + 2*counter + 1] == "11") then
+		if([childPTBR + 2*counter + 1] == "01" || [childPTBR + 2*counter + 1] == "11") then //if valid memory page, increment the value in the memory free list to show sharing
 			[1280 + [childPTBR + 2*counter]] = [1280 + [childPTBR + 2*counter]] + 1;
 		endif;
-		if([childPTBR + 2*counter + 1]=="00" || [childPTBR + 2*counter + 1]=="10") then
+		if([childPTBR + 2*counter + 1]=="00" || [childPTBR + 2*counter + 1]=="10") then //if invalid and swap block, increment df for the swap block to show sharing
 			if([childPTBR + 2*counter]>=448) then
 				[6*512 + [childPTBR + 2*counter]] = [6*512 + [childPTBR + 2*counter]] + 1;
-				store(6,20);
+				store(6,20); //commit df back to memory
 			endif;
 		endif;
 		counter = counter + 1;

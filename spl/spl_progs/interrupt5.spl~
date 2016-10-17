@@ -64,6 +64,7 @@ if(sysCallNo == 8) then	//fork system call
 		if([childPTBR + 2*counter + 1]=="00" || [childPTBR + 2*counter + 1]=="10") then
 			if([childPTBR + 2*counter]>=448) then
 				[6*512 + [childPTBR + 2*counter]] = [6*512 + [childPTBR + 2*counter]] + 1;
+				store(6,20);
 			endif;
 		endif;
 		counter = counter + 1;
