@@ -100,6 +100,7 @@ while(counter<32) do
 endwhile;
 
 [READY_LIST + 1] = 2;
+[READY_LIST + 31] = 0; //parent of the init process is itself
 	
 
 ireturn; //transfer control to the user program

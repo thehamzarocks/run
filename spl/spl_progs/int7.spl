@@ -4,11 +4,25 @@ alias sysCallNo S2;
 
 physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 sysCallNo = [physicalSP -1];
-i=53;
-breakpoint;
 
 if(sysCallNo == 10) then
 	alias counter S3;
+
+	alias PID S4;
+	PID = (PTBR-1024)/8;
+
+	counter = 0;
+	while(counter < 32) do
+		if([READY_LIST + 32*counter + 1] == PID + 100) then
+			i=9762;
+			breakpoint;
+			[READY_LIST + 32*counter + 1] = 1;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+
+
 	counter = 0;
 	while(counter<32) do //if no  ready processes, halt the machine
 		if([READY_LIST + 32*counter + 1] == 1) then	
@@ -21,16 +35,6 @@ if(sysCallNo == 10) then
 		halt;
 	endif;
 
-	alias PID S4;
-	PID = (PTBR - 1024)/8; //get the pid of the current process
-
-	counter = 0;
-	while(counter < 32) do
-		if([READY_LIST + 32*counter + 1] == PID + 100) then
-			[READY_LIST + 32*counter + 1] = 1;
-		endif;
-		counter = counter + 1;
-	endwhile;
 
 	
 	counter = 0;
@@ -77,10 +81,9 @@ if(sysCallNo == 10) then
 //		[PTBR + 2*counter + 1] = "00";
 //		counter = counter + 1;
 //	endwhile;
-//	i=7;
-//	breakpoint;
 	
 	i = 9876;
+	breakpoint;
 	counter = (PID + 1)%32; //search for the next ready process
 	while(counter !=PID) do
 		if([READY_LIST + 32*counter + 1]==1) then	
@@ -123,7 +126,11 @@ if(sysCallNo == 13) then
 	endif;
 	
 	[READY_LIST + 32*(PTBR - 1024)/8 + 1] = 100 + WaitingPID;
-	inline "JMP 23*512 + 249*2";	
+	alias temp S10;
+	temp=9998;
+	breakpoint;
+	//inline "JMP 23*512 + 249*2";	
+	inline "JMP 12268";
 
 
 
