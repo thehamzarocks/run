@@ -2,7 +2,10 @@ alias currentPID S0;
 alias currentPCB S1;
 currentPID = (PTBR - 1024)/8; //pid of the current process
 currentPCB = READY_LIST + 32*currentPID; //location of the PCB of the current process
-[currentPCB + 1] = 1; //set the state to ready
+
+if([currentPCB + 1] == 2) then
+	[currentPCB + 1] = 1; //set the state to ready
+endif;
 [currentPCB + 2] = BP;
 [currentPCB + 3] = SP-1; //when the timer interrupt id called, SP is incremeted and stores the value of the IP. But we need the actual SP of the process afterwards
 

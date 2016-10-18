@@ -12,11 +12,11 @@ if(Cause != 0) then //not a page fault, so exit after displaying the apprpriate 
 	alias physicalSP S8;
 	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 	[physicalSP - 1] = 10;
-	inline "JMP 23*512"; 
+	inline "JMP 11176"; 
 endif;
 
 if([PTBR + 2*VPagenum] == -1) then //illegal memory access
-	inline "JMP 23*512";
+	inline "JMP 11176";
 endif;
 
 alias counter S4;
@@ -66,7 +66,7 @@ if(counter == 64) then //if no free page, replace an existing page
 			endif;
 			i = i + 1;
 		endwhile;
-		if(i < 3) then
+		if(i < 3) then //found a page to replace. Can stop searching now.
 			break;
 		endif;
 		counter = (counter + 1) % 32;
@@ -77,23 +77,23 @@ endif;
 
 
 alias physvpage S7;
-physvpage = [PTBR + 2*VPagenum];
-if(physvpage>=21 || physvpage <=447) then 
+physvpage = [PTBR + 2*VPagenum]; //get the disk block pointed to by the page table entry
+if(physvpage>=21 || physvpage <=447) then //if not a swap block, simply load it to the free memory page
 	load(j,physvpage);
 endif;
 
-if(physvpage>=448) then
+if(physvpage>=448) then //if a swap block, decrement its entry in the df by 1 also
 	load(j,physvpage);
 	[6*512 + physvpage] = [6*512 + physvpage] - 1;
 endif;
 
-[PTBR + 2*VPagenum] = j;
-[PTBR + 2*VPagenum + 1] = "11";
+[PTBR + 2*VPagenum] = j; //set the page table entry to the memory page found
+[PTBR + 2*VPagenum + 1] = "11"; //set the entry to referenced and valid
 
 SP = SP + 1;
 alias physicalSP S8;
 physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
-[physicalSP] = Ip_addr;
+[physicalSP] = Ip_addr; //store the IP value on the stack top
 ireturn;
 
 				

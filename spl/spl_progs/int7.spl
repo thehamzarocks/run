@@ -1,21 +1,23 @@
 alias i S0;
 alias physicalSP S1;
 alias sysCallNo S2;
+alias counter S3;
+alias PID S4;
 
 physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 sysCallNo = [physicalSP -1];
 
 if(sysCallNo == 10) then
-	alias counter S3;
+	//alias counter S3;
 
-	alias PID S4;
+	//alias PID S4;
 	PID = (PTBR-1024)/8;
 
 	counter = 0;
 	while(counter < 32) do
 		if([READY_LIST + 32*counter + 1] == PID + 100) then
 			i=9762;
-			breakpoint;
+			//breakpoint;
 			[READY_LIST + 32*counter + 1] = 1;
 		endif;
 		counter = counter + 1;
@@ -82,8 +84,8 @@ if(sysCallNo == 10) then
 //		counter = counter + 1;
 //	endwhile;
 	
-	i = 9876;
-	breakpoint;
+	//i = 9876;
+	//breakpoint;
 	counter = (PID + 1)%32; //search for the next ready process
 	while(counter !=PID) do
 		if([READY_LIST + 32*counter + 1]==1) then	
@@ -118,66 +120,45 @@ if(sysCallNo == 10) then
 endif;
 
 if(sysCallNo == 13) then
-	alias WaitingPID S3;
+	alias WaitingPID S15;
 	WaitingPID = [physicalSP - 3];
 	if([READY_LIST + 32*WaitingPID + 1]==2 || [READY_LIST + 32*WaitingPID + 1]==0) then
 		[physicalSP - 2] = -1;
 		ireturn;
 	endif;
 	
-	[READY_LIST + 32*(PTBR - 1024)/8 + 1] = 100 + WaitingPID;
-	alias temp S10;
-	temp=9998;
+	print("Waiting");
 	breakpoint;
+	[READY_LIST + 32*(PTBR - 1024)/8 + 1] = 100 + WaitingPID;
+		
+
+	//alias temp S10;
+	//temp=9998;
+	//breakpoint;
 	//inline "JMP 23*512 + 249*2";	
-	inline "JMP 12268";
+	//PID = (PTBR-1024)/8;
+	//inline "JMP 12272";
 
-
-
-
-
-
-
-//	alias counter S4;
-//	counter = ((PTBR-1024)/8 + 1)%32;
-//	while(counter != (PTBR-1024)/8) do
-//		if([READY_LIST + 32*counter + 1] == 1) then
-//			break;
-//		endif;
-//		counter = (counter + 1)%32;
-//	endwhile;
-//
-//	i = READY_LIST + 32*counter;
-//	BP = [i + 2];
-//	SP = [i + 3];
-//	PTBR = [i + 5];
-//	PTLR = [i + 6];
-//	R0 = [i + 7];
-//	R1 = [i + 8];
-//	R2 = [i + 9];
-//	R3 = [i + 10];
-//	R4 = [i + 11];
-//	R5 = [i + 12];
-//	R6 = [i + 13];
-//	R7 = [i + 14];
-	
-//	SP = SP + 1;
-//	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
-//	[physicalSP] = [i + 4];
-//	[i + 1] = 2;
 	[physicalSP - 2] = 0;
+	inline "JMP 4608";
 	ireturn;
 endif;
 
 if(sysCallNo==14) then
+	//i=7878;
+	//breakpoint;
 	i = 0;
 	while(i<32) do
-		if([READY_LIST + 32*i + 1] == 100 + (PTBR - 1024)/8) then
+		if([READY_LIST + 32*i + 1] == (100 + (PTBR - 1024)/8)) then
+			print("signalled");
+			breakpoint;
 			[READY_LIST + 32*i + 1] = 1;
 		endif;
 		i = i + 1;
 	endwhile;
 	[physicalSP - 2] = 0;
+	//i = 5738;
+	//breakpoint;
 	ireturn;
 endif;
 
