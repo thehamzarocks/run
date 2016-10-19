@@ -20,8 +20,8 @@ integer main() {
 		i = i + 1;
 	endwhile;
 
-	j = Close(file1);
-	j = Close(file2);
+	//j = Close(file1);
+	//j = Close(file2);
 	j = Close(filem1);
 
 	i = 0;
@@ -38,21 +38,28 @@ integer main() {
 		i = i + 1;
 	endwhile;
 
-	j = Close(file3);
-	j = Close(file4);
+	//j = Close(file3);
+	//j = Close(file4);
 	j = Close(filem2);
 
 	filem1 = Open("filem1");
 	filem2 = Open("filem2");
+
 	
 	file = Create("file");
 	file = Open("file");
 
 	i = 0;
-	while(i < 20) do
+	while(i < 10) do
 		j = Read(filem1, word);
 		j = Write(file, word);
 
+		j = Read(filem1, word);
+		j = Write(file, word);
+
+		j = Read(filem2, word);
+		j = Write(file, word);
+	
 		j = Read(filem2, word);
 		j = Write(file, word);
 		
@@ -60,8 +67,8 @@ integer main() {
 	endwhile;
 
 	i = 0;
-	j = Close(filem1);
-	j = Close(filem2);
+	//j = Close(filem1);
+	//j = Close(filem2);
 	j = Close(file);
 
 	file = Open("file");
