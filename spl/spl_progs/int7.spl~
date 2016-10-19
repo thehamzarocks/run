@@ -120,7 +120,7 @@ if(sysCallNo == 10) then
 endif;
 
 if(sysCallNo == 13) then
-	alias WaitingPID S3;
+	alias WaitingPID S15;
 	WaitingPID = [physicalSP - 3];
 	if([READY_LIST + 32*WaitingPID + 1]==2 || [READY_LIST + 32*WaitingPID + 1]==0) then
 		[physicalSP - 2] = -1;
@@ -136,10 +136,11 @@ if(sysCallNo == 13) then
 	//temp=9998;
 	//breakpoint;
 	//inline "JMP 23*512 + 249*2";	
-	PID = (PTBR-1024)/8;
-	inline "JMP 12272";
+	//PID = (PTBR-1024)/8;
+	//inline "JMP 12272";
 
 	[physicalSP - 2] = 0;
+	inline "JMP 4608";
 	ireturn;
 endif;
 
