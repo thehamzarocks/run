@@ -4,7 +4,6 @@ integer main() {
 	status = Fork();
 	
 	pid = Getpid();
-	print(pid);
 	if(pid == 1) then
 		status = Create("file1");
 		status = Open("file1");
@@ -33,6 +32,7 @@ integer main() {
 			i = i + 4;
 		endwhile;
 		j = Close(status);
+		print(pid);
 		status = Signal();
 	endif;
 
@@ -45,6 +45,7 @@ integer main() {
 			i = i + 4;
 		endwhile;
 		j = Close(status);
+		print(pid);
 		status = Signal();
 	endif;
 
@@ -52,11 +53,12 @@ integer main() {
 		status = Create("file4");
 		status = Open("file4");
 		i = 4;
-		while(i<100) do
+		while(i<=100) do
 			j = Write(status, i);
 			i = i + 4;
 		endwhile;
 		j = Close(status);
+		print(pid);
 		status = Signal();
 	endif;
 	

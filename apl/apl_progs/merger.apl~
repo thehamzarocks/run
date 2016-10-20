@@ -52,7 +52,7 @@ integer main() {
 		status = Create("file4");
 		status = Open("file4");
 		i = 4;
-		while(i<100) do
+		while(i<=100) do
 			j = Write(status, i);
 			i = i + 4;
 		endwhile;
