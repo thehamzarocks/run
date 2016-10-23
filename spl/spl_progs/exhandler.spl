@@ -50,7 +50,7 @@ if(counter == 64) then //if no free page, replace an existing page
 				endwhile;
 				
 				if(j==512) then //exit if no free block
-					inline "JMP 23*512";
+					inline "JMP 11776";
 				endif;
 	
 				physicalpage = [1024 + 8*counter + 2*i]; //get the physical page(disk block here) corresponding to this entry
