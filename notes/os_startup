@@ -1,0 +1,15 @@
+1. Load the timer, interrupt routines 1-7 and the exception handler to memory.
+2. Set up the PCB of the init process as follows:
+	2.1. PID = 0
+	2.2. State = 2
+	2.3 PTBR and PTLR fields
+
+3. Set up the page table entries to the corresponding disk block numbers.
+4. Set those entries to invalid and unreferneced.
+5. Allocate a free page to the stack (25 is okay)
+6. Set up the page table entry for the stack
+7. Set SP = 3*512
+8. Set [25*512] = 0 (IP value)
+9. Load the df and fat
+
+	

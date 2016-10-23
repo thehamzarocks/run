@@ -37,7 +37,7 @@ load(10,4);
 
 SP = 3*512; //The stack pointer points to the fourth logical page (since it is used by user programs)
 
-[28*512] = 0; //set up the IP value for init at the top of the stack
+[25*512] = 0; //set up the IP value for init at the top of the stack
 
 load(11,5); //load interrupt 1 routine
 load(12,6); 
@@ -87,7 +87,7 @@ while(counter<=1280+25) do
 endwhile;
 
 counter = 448; //set the swap area of the disk free list to unused
-while(6*512 + counter < 512) do
+while(counter < 512) do
 	[6*512 + counter] = 0;
 	counter = counter + 1;
 endwhile;
