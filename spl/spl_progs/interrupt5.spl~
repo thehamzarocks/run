@@ -43,7 +43,6 @@ if(sysCallNo == 8) then	//fork system call
 	//endif;
 
 	if(counter == 64) then
-		print("counter64");
 		counter = ((PTBR-1024)/8 + 1)%32;
 		while(1) do
 			i = 0;
@@ -83,7 +82,6 @@ if(sysCallNo == 8) then	//fork system call
 			counter = (counter + 1)%32;
 		endwhile;
 		counter = physicalpage;
-		print("done");
 	endif;
 	
 		
