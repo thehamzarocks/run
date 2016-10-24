@@ -13,11 +13,13 @@ if(sysCallNo == 10) then
 	//alias PID S4;
 	PID = (PTBR-1024)/8;
 
+	print("exit called");
+	breakpoint;
 	counter = 0;
 	while(counter < 32) do
 		if([READY_LIST + 32*counter + 1] == PID + 100) then
-			i=9762;
-			//breakpoint;
+			print("readied");
+			breakpoint;
 			[READY_LIST + 32*counter + 1] = 1;
 		endif;
 		counter = counter + 1;
@@ -95,6 +97,9 @@ if(sysCallNo == 10) then
 		counter = (counter + 1)%32;
 	endwhile;
 
+	print("gonna start");
+	breakpoint;
+
 
 	alias newPCB S5;
 	newPCB = counter;
@@ -117,6 +122,8 @@ if(sysCallNo == 10) then
 	physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
 	[physicalSP] = [i + 4]; //store the IP value on top of the stack
 	[i + 1] = 2; //set the state to running
+	print("leaving");
+	breakpoint;
 	ireturn;
 endif;
 

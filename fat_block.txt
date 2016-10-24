@@ -54,7 +54,7 @@ merging.xsm
 
 
 
-file1
+waiting.xsm
 512
 42
 
@@ -62,15 +62,7 @@ file1
 
 
 
-file2
-512
-43
-
-
-
-
-
-file3
+execer.xsm
 512
 44
 
@@ -78,9 +70,17 @@ file3
 
 
 
-file4
-512
-45
+-1
+0
+-1
+
+
+
+
+
+-1
+0
+-1
 
 
 
@@ -94,17 +94,17 @@ mclean.xsm
 
 
 
-filem1
-512
-53
+-1
+0
+-1
 
 
 
 
 
-filem2
-512
-55
+-1
+0
+-1
 
 
 

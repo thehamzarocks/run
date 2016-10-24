@@ -55,6 +55,8 @@ if(sysCallNo == 9) then
 		ireturn;
 	endif;
 	
+	print("found mem");
+	breakpoint;
 	
 	i = 1024 + 8*childPID; //set up the page table entries
 	[i + 6] = counter;
@@ -69,16 +71,19 @@ if(sysCallNo == 9) then
 			[i + 2*counter] = -1;
 		endif;
 		[i + 2*counter + 1] = "00";
-		i = i + 1;
+		counter = counter + 1;
 	endwhile;
+
+	print("set pt");
+	breakpoint;
 
 	i = READY_LIST + 32*childPID; //set up the PCB entries
 	[i] = childPID;
 	[i + 1] = 100 + (PTBR - 1024)/8;
-	[i + 2] = 3*512;
-	[i + 3] = 3*512;
+	[i + 2] = 3*512-1;
+	[i + 3] = 3*512-1;
 	[i + 4] = 0;
-	[i + 5] = PTBR;
+	[i + 5] = (1024 + childPID*8);
 	[i + 6] = PTLR;
 	
 	i = i + 15;
@@ -89,7 +94,8 @@ if(sysCallNo == 9) then
 		counter = counter + 1;
 	endwhile;
 
-	
+	print("Set pcb");	
+	breakpoint;
 
 	//counter = 0;
 	//while(counter < 3) do
@@ -140,8 +146,8 @@ if(sysCallNo == 9) then
 	//physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512); 
 	//[PTBR + 7] = "01";
 	//[physicalSP] = 0; //store the IP value 0 on the top of the stack
-	print("leaving ex");
-	breakpoint;
+	alias childPhysicalSP S12;
+	[physicalSP - 2] = 0;
 	ireturn;
 endif;
 
