@@ -1,0 +1,165 @@
+alias i S0;
+alias physicalSP S1;
+alias sysCallNo S2;
+alias childPID S11;
+
+physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512);
+sysCallNo = [physicalSP - 1];
+
+if(sysCallNo == 9) then
+	alias counter S3;
+	alias filename S4;
+	filename = [physicalSP - 3];
+	counter = 0;
+	while(counter < 64) do //search for the file in the FAT
+		if([FAT + counter*8]==filename) then
+			break;
+		endif;
+		counter = counter + 1;
+	endwhile;
+	
+	if(counter == 64) then
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+
+	
+	load(1,[FAT + 8*counter + 2]); //load its basic block to the scratchpad to search for data blocks
+
+	counter = 0;
+	while(counter<64) do //search for a free PCB
+		if([READY_LIST + 32*counter + 1] == 0) then
+			break;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	if(counter == 64) then
+		print("No free PCB");
+		[physicalSP - 2] = -1;
+	endif;
+
+	childPID = counter;
+
+	counter = 0;
+	while(counter<64) do
+		if([1280 + counter] == 0) then
+			break;
+		endif;
+		counter = counter + 1;
+	endwhile;
+
+	if(counter == 64) then
+		print("No free memory");
+		[physicalSP - 2] = -1;
+		ireturn;
+	endif;
+	
+	print("found mem");
+	breakpoint;
+	
+	i = 1024 + 8*childPID; //set up the page table entries
+	[i + 6] = counter;
+	[i + 7] = "01";
+	[1280 + counter] = 1; //set mf entry to used
+	counter = 0;
+	while(counter<3) do 
+		if([512 + counter] != -1) then
+			[i + 2*counter] = [512 + counter];
+		endif;
+		if([512 + counter] == -1) then
+			[i + 2*counter] = -1;
+		endif;
+		[i + 2*counter + 1] = "00";
+		i = i + 1;
+	endwhile;
+
+	print("set pt");
+	breakpoint;
+
+	i = READY_LIST + 32*childPID; //set up the PCB entries
+	[i] = childPID;
+	[i + 1] = 100 + (PTBR - 1024)/8;
+	[i + 2] = 3*512;
+	[i + 3] = 3*512;
+	[i + 4] = 0;
+	[i + 5] = PTBR;
+	[i + 6] = PTLR;
+	
+	i = i + 15;
+	counter = 0;
+	while(counter < 8) do
+		[i + 2*counter] = -1;
+		[i + 2*counter + 1] = -1;
+		counter = counter + 1;
+	endwhile;
+
+	
+
+	//counter = 0;
+	//while(counter < 3) do
+	//	if([PTBR + 2*counter + 1]=="01" || [PTBR + 2*counter + 1]=="11") then //if valid memory page, decrement count in memory free list
+	//		[1280 + [PTBR + 2*counter]] = [1280 + [PTBR + 2*counter]] - 1;
+	//	endif;
+	//	if([PTBR + 2*counter + 1]=="00" || [PTBR + 2*counter + 1]=="10") then //if swap block, decrement entry in the disk free list
+	//		if([1280 + [PTBR + 2*counter]]>=448) then
+	//			[1280 + [PTBR + 2*counter]] = [1280 + [PTBR + 2*counter]] - 1;	
+	//		endif;
+	//	endif;
+	//	counter = counter + 1;
+	//endwhile;
+	
+	//counter = 0;
+	//while(counter<3) do
+	//	if([512 + counter]!=-1) then //set up the page table with the data block numbers
+	//		[PTBR + 2*counter] = [512 + counter];
+	//	endif;
+	//	if([512 + counter]==-1) then
+	//		[PTBR + 2*counter] = -1;
+	//	endif;
+	//	[PTBR + 2*counter + 1] = "00";
+	//	counter = counter + 1;
+	//endwhile;
+
+	
+
+
+
+		
+	//counter = 0;
+	//i = READY_LIST + 32*(PTBR-1024)/8 + 15; //update the system wide open file table and reset the per process open file table
+	
+	//while(counter<8) do
+	//	if([i + 2*counter]!=-1) then
+	//		[FILE_TABLE + [i + 2*counter]*2 + 1] = [FILE_TABLE + [i + 2*counter]*2 +1] - 1;
+	//		if([FILE_TABLE + [i + 2*counter]*2 + 1] == 0) then
+	//			[FILE_TABLE + [i + 2*counter]*2] = -1;
+	//		endif;
+	//		[i + 2*counter] = -1;
+	//		[i + 2*counter + 1] = -1;
+	//	endif;
+	//	counter = counter + 1;
+	//endwhile;
+
+	//SP = 3*512; //set the SP of the new process
+	//physicalSP = [PTBR + 2*(SP/512)]*512 + (SP%512); 
+	//[PTBR + 7] = "01";
+	//[physicalSP] = 0; //store the IP value 0 on the top of the stack
+	ireturn;
+endif;
+
+if(sysCallNo == 11) then
+	[physicalSP - 2] = (PTBR - 1024)/8;
+	ireturn;
+endif;
+
+if(sysCallNo == 12) then
+	[physicalSP - 2] = [READY_LIST + 32*(PTBR - 1024)/8 + 31];
+	ireturn;
+endif;
+	
+
+					
+					
+					
+		
